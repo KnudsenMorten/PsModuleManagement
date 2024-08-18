@@ -1,0 +1,1 @@
+C:\Scripts\PowershellModuleManagement\cmtrace "c:\windows\temp\PowershellModuleManagement-log.txt"

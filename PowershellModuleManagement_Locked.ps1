@@ -173,7 +173,7 @@ ForEach ($Module in $Modules)
         # PostActionsPsModuleManagement - Important after initial implementation
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-            $Result = PostActionsPsModuleManagement -FileName $PostMitigationScriptKnownIssues -GitHubUri $GitHubUri
+            $Result = PostActionsPsModuleManagement -FileName $PostMitigationScriptKnownIssues -GitHubUri "https://raw.githubusercontent.com/KnudsenMorten/PsModuleManagement/main"
 
             If ($global:TerminateSession)
                 {
@@ -271,7 +271,7 @@ ForEach ($Module in $Modules)
                                     }
 
                             # PostActionsPsModuleManagement
-                                $Result = PostActionsPsModuleManagement -FileName $PostMitigationScriptKnownIssues -GitHubUri $GitHubUri
+                                $Result = PostActionsPsModuleManagement -FileName $PostMitigationScriptKnownIssues -GitHubUri "https://raw.githubusercontent.com/KnudsenMorten/PsModuleManagement/main"
 
                                 If ($global:TerminateSession)
                                     {
@@ -372,7 +372,7 @@ ForEach ($Module in $Modules)
                         Update-module $MainModule -RequiredVersion $NewestOnlineVersion -Force
 
                     # PostActionsPsModuleManagement
-                        $Result = PostActionsPsModuleManagement -FileName $PostMitigationScriptKnownIssues -GitHubUri $GitHubUri
+                        $Result = PostActionsPsModuleManagement -FileName $PostMitigationScriptKnownIssues -GitHubUri "https://raw.githubusercontent.com/KnudsenMorten/PsModuleManagement/main"
 
                         If ($global:TerminateSession)
                             {
