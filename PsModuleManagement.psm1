@@ -54,32 +54,36 @@ Function InstalledModuleInfoPsModuleManagement
                     }
 
             # Verify critical Auth component exists ! If not, then install component
-                write-host ""
-                write-host "Installation: Checking installation of authentication module $($AuthModule) ... Please Wait !"
-                $AuthModuleInfo = Get-installedmodule $AuthModule -ErrorAction SilentlyContinue
-                If (!($AuthModuleInfo))
-                    {
-                        # Stopping all services
-                            PowershellServiceProcessMaintenance -Services $MaintenancePowershellServices -Processes $MaintenancePowershellProcesses -Action STOP
+            If ($AuthModule)
+                {
+                        write-host ""
+                        write-host "Installation: Checking installation of authentication module $($AuthModule) ... Please Wait !"
+                        $AuthModuleInfo = Get-installedmodule $AuthModule -ErrorAction SilentlyContinue
+                        If (!($AuthModuleInfo))
+                            {
+                                # Stopping all services
+                                    PowershellServiceProcessMaintenance -Services $MaintenancePowershellServices -Processes $MaintenancePowershellProcesses -Action STOP
 
-                            Try
-                                {
-                                    install-module $AuthModule -force -Scope AllUsers -AllowClobber -ErrorAction Stop
-                                }
-                            Catch
-                                {
                                     Try
                                         {
-                                            install-module $AuthModule -force -Scope AllUsers -ErrorAction Stop
+                                            install-module $AuthModule -force -Scope AllUsers -AllowClobber -ErrorAction Stop
                                         }
                                     Catch
                                         {
-                                            write-host "Errors occured .... terminating as modules are locked in memory !!"
-                                            write-host "Close down the current Powershell session and re-run this script !"
-                                            Exit 1
+                                            Try
+                                                {
+                                                    install-module $AuthModule -force -Scope AllUsers -ErrorAction Stop
+                                                }
+                                            Catch
+                                                {
+                                                    write-host "Errors occured .... terminating as modules are locked in memory !!"
+                                                    write-host "Close down the current Powershell session and re-run this script !"
+                                                    Exit 1
+                                                }
                                         }
-                                }
-                    }
+                            }
+                }
+
         } # If ($CheckInstallation)
 
     # Get info about current version of Main Module
@@ -107,20 +111,23 @@ Function InstalledModuleInfoPsModuleManagement
         $Global:InstalledVersionSubModules = Get-installedmodule "$($MainModule).*" -ErrorAction SilentlyContinue
 
     # Getting information about Auth Module
-        $AuthModuleInfo = Get-installedmodule $AuthModule -ErrorAction SilentlyContinue
-        $Global:AuthModuleRequiredVersion = $AuthModuleInfo.Version
+    If ($AuthModule)
+        {
+            $AuthModuleInfo = Get-installedmodule $AuthModule -ErrorAction SilentlyContinue
+            $Global:AuthModuleRequiredVersion = $AuthModuleInfo.Version
 
-        If ($Global:AuthModuleRequiredVersion)
-            {
-                write-host ""
-                write-host "Installed: Version of $($AuthModule) found on system: $($Global:AuthModuleRequiredVersion)"
-            }
-        Else
-            {
-                write-host ""
-                write-host "Could not detect $($AuthModule) on system .... exiting !"
-                Exit 1
-            }
+            If ($Global:AuthModuleRequiredVersion)
+                {
+                    write-host ""
+                    write-host "Installed: Version of $($AuthModule) found on system: $($Global:AuthModuleRequiredVersion)"
+                }
+            Else
+                {
+                    write-host ""
+                    write-host "Could not detect $($AuthModule) on system .... exiting !"
+                    Exit 1
+                }
+        }
 
 
     If ($GetOldVersions)
@@ -430,8 +437,8 @@ Function TestConnectivityPsModuleManagement
 # SIG # Begin signature block
 # MIIaigYJKoZIhvcNAQcCoIIaezCCGncCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAmyZGhmPc2w5NX
-# JqRgam6T+7xyrV1FtLzHK85NORf3NaCCFsUwggNfMIICR6ADAgECAgsEAAAAAAEh
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCK9MeHafaL1goN
+# Yie71vbxupa6Dat5zzi5puBUvPZoX6CCFsUwggNfMIICR6ADAgECAgsEAAAAAAEh
 # WFMIojANBgkqhkiG9w0BAQsFADBMMSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3Qg
 # Q0EgLSBSMzETMBEGA1UEChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2ln
 # bjAeFw0wOTAzMTgxMDAwMDBaFw0yOTAzMTgxMDAwMDBaMEwxIDAeBgNVBAsTF0ds
@@ -557,17 +564,17 @@ Function TestConnectivityPsModuleManagement
 # IG52LXNhMS8wLQYDVQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcg
 # Q0EgMjAyMAIMeWPZY2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQB
 # gjcCAQwxCjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYK
-# KwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEII6nF9AS
-# kIuASBMAcqLJZyGXsPNU4rq7ffIT4JZQJ8cFMA0GCSqGSIb3DQEBAQUABIICACWs
-# zUyxtC35P6wZCPBMGAoXFHw19HQa2z6sfS4U6QIxwmx2FvhHUDlLCdzR3dfINp/q
-# ZjdGyzNdy43/ke+9jJKek/OwOrGkYGMoHOtFX+EvslJXYgOxPhhAFPRyZIxDqVBa
-# C+556M8TbzTPoN+cGJ7iCUYZYafJQ5jHODZrL8acVvbO9Xo0Q6AFiM8wXRTYfTZE
-# iHLyRl0u6UdiAv0dXxwID8+j6NdISSnYxF3Oaapx0lhuQyaC/aOkwERjpTzfqAKR
-# p+poApn6LJijElvbfnbIYca8S7N07E31f88LMT8r5ygHwOF4xSccMBa4ph1xT+yL
-# HwN0vpP/OqWCW+JolpE3ouK+X6g580KB6TH7P+Hx+lDyXuOEWkAcU6rswkjfMPoe
-# i0bMehsqB6Gf+G7pgxa+hIkB33Hitx7kB555TTbwD5t0xKGF98C5lCN1Fo5+oQ6R
-# hTVQouj54g9H+uGLxUrAwl6EcxHySbm8Ndhdh+4M1FkK7q12ak6HYSrHdSmfj3jw
-# Z1EJ3lKY9R5ePyyLGEpkV6+YBc/3gU1IiYPWfK/TKbiLxLTQNAY8108pSAGI+god
-# 7t2F63nohoxF/NRKoUeEP9mdd9sQY1tip1lt7aADu91jxyXrc6+XAd9YI+EdDytm
-# LA/IuJo74yeEVxPOf9Bi+VjmVjcd6yvo0eFKfajH
+# KwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIJTG+Pt+
+# +4yw6pooIVStZXOweEI0RmDllMZYwkzHYkZxMA0GCSqGSIb3DQEBAQUABIICADNG
+# fTYaMMNrF3JX/xeWSHj7CKUTCmGKb4RCXuo36+N4isXrR4YdTOujKaFoC9+Y0I8I
+# ZzSlrYuSG0gTXLT7uZ10MZGS1j0+hTKQt8Xy40Nvo9ptQw5Su56w9aX1MJWzl81a
+# Fc4mi/qOgY4PipT4T39wsIR6eHHCcGNdT/cGisfqNDLzJxNoWLS19oYPWeWXZfd2
+# 9hLK38SacoVUfao2Lvyapz4U/qefAaTZyYxhzMTcIeBN0MzlX39D73FQ57t5HwsH
+# HuYFLiqxqVwfUGdakKEGS4ZJdt8NQGJO0vQPR9o1rQOpb2aQvOzYJvp+aI/Q7b0P
+# JpoXwHQe0If6xNIJC+p1zDHIADCVIfzzzLAoYbDu4pcfde4rmsRZa7RO4TkTdNZ1
+# WqrB6C3vuHBDF7WUUCAqbNhk5uuothdY0bGzvFx+lg78yUoHHAVMupQU4C4DbBhd
+# 76iLp//dkbGhGuP+w/jsfGGVnPrRKgwuI9IjPchSTUmUtTlFN6sUheotp+cDbFKF
+# ot+/Y6ZkkZ3Fqj8P4yVEt+gqhwcbabI3cuvyQW7iLJl6TwV8uOmLyAyFkN6inz9V
+# QKBAR7oEPMqFBLdbAsaNKg5hGJnPVreKSTTjPrp7to3DanY8+Kt8Vjy3QMihOZ2N
+# uJw1/ZRSwKfZEDRlWSxc9oCJzm3Kikkj7W4IeI6B
 # SIG # End signature block
