@@ -31,7 +31,7 @@ Function TestConnectivityPsModuleManagement
     If ($AuthModule)
         {
             write-host ""
-            write-host "Auth Module version: $($AuthModuleRequiredVersion))"
+            write-host "Auth Module version: $($AuthModuleRequiredVersion)"
             import-module $AuthModule -RequiredVersion $AuthModuleRequiredVersion
         }
 
@@ -114,8 +114,8 @@ Function TestConnectivityPsModuleManagement
 # SIG # Begin signature block
 # MIIXAgYJKoZIhvcNAQcCoIIW8zCCFu8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUKDxWPsnRUfHLU/PcBlylHINv
-# mOWgghNiMIIFojCCBIqgAwIBAgIQeAMYQkVwikHPbwG47rSpVDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUE5tK0ilNhaRpFiTPH0FGd9ys
+# 3L2gghNiMIIFojCCBIqgAwIBAgIQeAMYQkVwikHPbwG47rSpVDANBgkqhkiG9w0B
 # AQwFADBMMSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3QgQ0EgLSBSMzETMBEGA1UE
 # ChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbjAeFw0yMDA3MjgwMDAw
 # MDBaFw0yOTAzMTgwMDAwMDBaMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9i
@@ -223,16 +223,16 @@ Function TestConnectivityPsModuleManagement
 # U2lnbiBHQ0MgUjQ1IENvZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJ
 # BgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0B
 # CQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAj
-# BgkqhkiG9w0BCQQxFgQUMDoAFF/Z+RsP2xX3OypI/lhAnkUwDQYJKoZIhvcNAQEB
-# BQAEggIAfRUEKjID7DSvhye+GpvkQQhFzG9prkzoOrmNSnF57FMnFsuENjOBs2s7
-# sjbdAJaTNfnmfj2gCztE07IOVu6QS841i9mjsj/QU3C73T0D+lU0Z5u2vtFAe/e5
-# tmVnMUEEATegrAPstoZacfr1KlOSoOrc/e+Cw8KBpgvxmsfQyA+/MiisyviPLT+A
-# YcdeNT6in6ntIVFwa3gBohrQbCo4emwZOBBS+qgGiE9Eo1ciZDJEA4sUFWm/5//v
-# rXV26MM+fmUOtGGEBPpcNDT3iOh78zGKS1ygY13F1uEeuI5hy1wx5uay5M7x3zSq
-# nPHZqVf92fqWts11JpHdkhDPZzL4URCsJjQLR7+Dyz04A2gq7Lr9EtbyF4sUHMIT
-# QT8/KMK3GeQ9E5INpHQLQyFIeAtOhnu5VKTebQO9rShD0CgstuAkrKrYb4HfYkNc
-# CY9/XnwrvsJF46bo3fh5ZbbQiAq6M41f7+KTTXcsstP65QmMJlKRcMFIA7aPUCwL
-# spcObNaPcKKI1/FLkRCSXMBOmmFo5haI+WYSVgNj5FnSK7gzaJ7pxneqNa8f1yoc
-# HVvaJwJh9aSrB/tnYL65sUV03vNbZ6AE3VoEXbj9AT3XlIGe/PaxlTFxbvVnlev3
-# 2SB6eFKCT3hMEhdgnOF6pUiNsK239ozG99AHHaT5y9P8mgbbfOI=
+# BgkqhkiG9w0BCQQxFgQUloFi+9MaezaPoO7kz64g2hACpawwDQYJKoZIhvcNAQEB
+# BQAEggIAv/mbuv8Ig4MBnN4tMkJkFhnSxa+g1FN8R6y7v2Y2GKQOGnDJhvg679Xb
+# c+j8FiN9EyVCSj/lYeLm/R1ktufhEZNnImcJQYPOVqudRECJOMK8Dml7vh4sk4Yg
+# H5C/LcF6VWE9G5enIwZf+kKFZ//p4NxiBgHFN/BiI6JnyrbpNA5x03B/IUwzLxCC
+# FIt3Yyb22xu9ZX5D4ZzMDmLeVinfRGqLAv8rxRq/zuAi3Jfb44EK8PYfycBbmoXf
+# yUyz+4XCJ3hQjNK+mabL+OaMs0KrROdVIiNYqNdrJ3gkaYjobk4Vqm0rtrpQp6ok
+# cQcZ5FH4I1x4eaxRm7EnYwupZs2jT93i8TUz/uPHoL1pFfCwRwE1+hgbxWZOSRPe
+# LJqanEesgdknuHiofHU9Z81DuaX6G0jlGnLTul39S6XI9C2WB7JiuM8WChAEsUPu
+# glJ/rtD/jwq9SVHu+YIBbBxSXUbtmoNKM6s+TfhKcgHGBL7iBKIdGT6252PknxuV
+# cyYVEotkIyX+xrzJDRIJ1+qOfrIYCcmmum8XCZvCrdcq1A/tVBvFyddn475Ap54p
+# N4FAxK3P7iTeKSbrkMtkcMYsZVL46PCQ8FEh578HWD+WZsupHB2jrAugOLHsaTsH
+# v3YmYAXAiWWtdPSzrxOgsv7uTjL0a+sfxI5PSvXyB2h6RRG97Lg=
 # SIG # End signature block
