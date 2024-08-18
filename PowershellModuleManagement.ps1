@@ -53,7 +53,11 @@
 #>
 
 
+
+#########################################################################################################
 # Downloading latest version of PowerShell Module Management (locked)
+#########################################################################################################
+
     Write-host "Powershell Module Management"
     Write-host "Created by Morten Knudsen, Microsoft MVP (@knudsenmortendk - mok@mortenknudsen.net)"
     write-host ""
@@ -67,6 +71,9 @@
 
     $ScriptFromGitHub = Invoke-WebRequest "$($GitHubUri)/$($FileName)" -OutFile $MainProgram
 
+
+#########################################################################################################
 # Running Main program
-& $MainProgram
+#########################################################################################################
+    & $MainProgram
 
