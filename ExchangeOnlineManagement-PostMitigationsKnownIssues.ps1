@@ -13,7 +13,7 @@
     Write-host "Version: $($Global:InstalledVersionMainModule.Version)"
     write-host ""
 
-    If ([version]$Global:InstalledVersionMainModule.Version -ge [version]$global:ModuleRequiredVersion )
+    If ([version]$Global:InstalledVersionMainModule.Version -gt [version]$global:ModuleRequiredVersion )
         {
             write-host "Downgrade manually to v3.4.0 ... Please Wait !!"
             write-host ""
