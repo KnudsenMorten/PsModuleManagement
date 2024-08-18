@@ -4,10 +4,14 @@ Function TestConnectivityPsModuleManagement
     param(
             [Parameter(mandatory)]
                 [string]$Entra_App_ApplicationID,
-            [Parameter(mandatory)]
+            [Parameter()]
                 [string]$Entra_App_Secret,
             [Parameter(mandatory)]
                 [string]$Entra_App_TenantID,
+            [Parameter(mandatory)]
+                [string]$Entra_TenantName,
+            [Parameter()]
+                [string]$Entra_App_CertificateThumbprint,
             [Parameter(mandatory)]
                 [string]$MainModule,
             [Parameter()]
@@ -41,11 +45,20 @@ Function TestConnectivityPsModuleManagement
             Try
                 {
 
-                    $Disconnect = Disconnect-MgGraph -ErrorAction SilentlyContinue
+                    If ($Entra_App_Secret)
+                        {
+                            $Disconnect = Disconnect-MgGraph -ErrorAction SilentlyContinue
 
-                    $ClientSecretCredential = New-Object System.Management.Automation.PSCredential ($Entra_App_ApplicationID, (ConvertTo-SecureString $Entra_App_Secret -AsPlainText -Force))
+                            $ClientSecretCredential = New-Object System.Management.Automation.PSCredential ($Entra_App_ApplicationID, (ConvertTo-SecureString $Entra_App_Secret -AsPlainText -Force))
 
-                    Connect-MgGraph -TenantId $Entra_App_TenantID -ClientSecretCredential $ClientSecretCredential -NoWelcome -ErrorAction Stop
+                            Connect-MgGraph -TenantId $Entra_App_TenantID -ClientSecretCredential $ClientSecretCredential -NoWelcome -ErrorAction Stop
+                        }
+                    ElseIf ($Entra_App_CertificateThumbprint)
+                        {
+                            $Disconnect = Disconnect-MgGraph -ErrorAction SilentlyContinue
+
+                            Connect-MgGraph -CertificateThumbprint $Entra_App_CertificateThumbprint -ClientId $Entra_App_ApplicationID -TenantId $Entra_App_TenantID  -NoWelcome -ErrorAction Stop
+                        }
                 }
             Catch
                 {
@@ -61,13 +74,24 @@ Function TestConnectivityPsModuleManagement
         {
             Try
                 {
-                    $Disconnect = Disconnect-AzAccount -ErrorAction SilentlyContinue
+                    If ($Entra_App_Secret)
+                        {
+                            $Disconnect = Disconnect-AzAccount -ErrorAction SilentlyContinue
 
-                    $ClientSecretCredential = New-Object System.Management.Automation.PSCredential ($Entra_App_ApplicationID, (ConvertTo-SecureString $Entra_App_Secret -AsPlainText -Force))
+                            $ClientSecretCredential = New-Object System.Management.Automation.PSCredential ($Entra_App_ApplicationID, (ConvertTo-SecureString $Entra_App_Secret -AsPlainText -Force))
 
-                    Connect-AzAccount -ServicePrincipal -TenantId $Entra_App_TenantID -Credential $ClientSecretCredential -SkipContextPopulation -Force -ErrorAction Stop
+                            Connect-AzAccount -ServicePrincipal -TenantId $Entra_App_TenantID -Credential $ClientSecretCredential -SkipContextPopulation -Force -ErrorAction Stop
                     
-                    Set-AzContext -Subscription $AzSubscriptionId -ErrorAction Stop
+                            Set-AzContext -Subscription $AzSubscriptionId -ErrorAction Stop
+                        }
+                    ElseIf ($Entra_App_CertificateThumbprint)
+                        {
+                            $Disconnect = Disconnect-AzAccount -ErrorAction SilentlyContinue
+
+                            Connect-AzAccount -CertificateThumbprint $Entra_App_CertificateThumbprint -TenantId $Entra_App_TenantID -Application $Entra_App_ApplicationID -SkipContextPopulation -Force -ErrorAction Stop
+                            
+                            Set-AzContext -Subscription $AzSubscriptionId -ErrorAction Stop
+                        }
                 }
             Catch
                 {
@@ -83,9 +107,14 @@ Function TestConnectivityPsModuleManagement
         {
             Try
                 {
-                    $ClientSecretCredential = New-Object System.Management.Automation.PSCredential ($Entra_App_ApplicationID, (ConvertTo-SecureString $Entra_App_Secret -AsPlainText -Force))
-
-                    Connect-ExchangeOnline -Credential $ClientSecretCredential -ShowProgress $false
+                    If ($Entra_App_Secret)
+                        {
+                            Write-host "No support to Entra ID App Secret"
+                        }
+                    ElseIf ($Entra_App_CertificateThumbprint)
+                        {
+                            Connect-ExchangeOnline -CertificateThumbprint $Entra_App_CertificateThumbprint -AppId $Entra_App_ApplicationID -Organization $Entra_TenantName -ShowProgress $false
+                        }
                 }
             Catch
                 {
@@ -114,8 +143,8 @@ Function TestConnectivityPsModuleManagement
 # SIG # Begin signature block
 # MIIXAgYJKoZIhvcNAQcCoIIW8zCCFu8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUE5tK0ilNhaRpFiTPH0FGd9ys
-# 3L2gghNiMIIFojCCBIqgAwIBAgIQeAMYQkVwikHPbwG47rSpVDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU7u9tMa6BcYm9hL7VBmGvZNFM
+# iTugghNiMIIFojCCBIqgAwIBAgIQeAMYQkVwikHPbwG47rSpVDANBgkqhkiG9w0B
 # AQwFADBMMSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3QgQ0EgLSBSMzETMBEGA1UE
 # ChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbjAeFw0yMDA3MjgwMDAw
 # MDBaFw0yOTAzMTgwMDAwMDBaMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9i
@@ -223,16 +252,16 @@ Function TestConnectivityPsModuleManagement
 # U2lnbiBHQ0MgUjQ1IENvZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJ
 # BgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0B
 # CQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAj
-# BgkqhkiG9w0BCQQxFgQUloFi+9MaezaPoO7kz64g2hACpawwDQYJKoZIhvcNAQEB
-# BQAEggIAv/mbuv8Ig4MBnN4tMkJkFhnSxa+g1FN8R6y7v2Y2GKQOGnDJhvg679Xb
-# c+j8FiN9EyVCSj/lYeLm/R1ktufhEZNnImcJQYPOVqudRECJOMK8Dml7vh4sk4Yg
-# H5C/LcF6VWE9G5enIwZf+kKFZ//p4NxiBgHFN/BiI6JnyrbpNA5x03B/IUwzLxCC
-# FIt3Yyb22xu9ZX5D4ZzMDmLeVinfRGqLAv8rxRq/zuAi3Jfb44EK8PYfycBbmoXf
-# yUyz+4XCJ3hQjNK+mabL+OaMs0KrROdVIiNYqNdrJ3gkaYjobk4Vqm0rtrpQp6ok
-# cQcZ5FH4I1x4eaxRm7EnYwupZs2jT93i8TUz/uPHoL1pFfCwRwE1+hgbxWZOSRPe
-# LJqanEesgdknuHiofHU9Z81DuaX6G0jlGnLTul39S6XI9C2WB7JiuM8WChAEsUPu
-# glJ/rtD/jwq9SVHu+YIBbBxSXUbtmoNKM6s+TfhKcgHGBL7iBKIdGT6252PknxuV
-# cyYVEotkIyX+xrzJDRIJ1+qOfrIYCcmmum8XCZvCrdcq1A/tVBvFyddn475Ap54p
-# N4FAxK3P7iTeKSbrkMtkcMYsZVL46PCQ8FEh578HWD+WZsupHB2jrAugOLHsaTsH
-# v3YmYAXAiWWtdPSzrxOgsv7uTjL0a+sfxI5PSvXyB2h6RRG97Lg=
+# BgkqhkiG9w0BCQQxFgQUf61ZcgpKmSULvygOLTk1mL3iHRowDQYJKoZIhvcNAQEB
+# BQAEggIAtG9yttZJImM9rziRO/hFq7IOWcWx+M3quU9s2Vkilgvxv5d2YlIfSuXK
+# 4SJydWwOMnKYcXWwlDT5V8iOoDNGrwW9jLNvg9AoLSyTf2YZ/ZHQdx1dta088kSP
+# C/jXESx+LPmoQjEj310+wLhKYWWiE10BT2aWaylPpLC+hqZa0kIcZtVqiGifUwGq
+# vR3tjO27iGXgh1syezRdVN0bKPf6SyoFneRWslrf8j++3Z8bmESSqHMBepzqDp/7
+# 0NCwabNS+WIGNrfDDvUMzmrRnVL3ow8q4wqIzUa9JYX3TiVQj0qHo8Y1FVbcNqOO
+# sXI6qJ3jKXMpz0Yx3IsOhvdEbLtz+hukBuPXEa80wuH68qPuDazMYn9s3Xzj6iho
+# 5GJUx5iGJ1f0NV1eNoPsrXl7m0QvVLp2RVCQBNcZJhh1Oz0JvWBCX6PmKa9BleMO
+# nbDInR34KtR2si6waA5BSgnNLt85iCveVVnxZttiDvDEm9mJlPd1Tb50j1yrGiJl
+# D3n8CCNCNCRi+7CsU0T5n3xLW6BlQYGdBCqdEyQFmfYs9T8VmcDNIU5m3X0YOW19
+# mi/2/jLEXmFmjNZcmovqJGSZCFjWt9aq0AMKdv77TXE9Pur1ZjSwi39BOt72skqi
+# Qpds2o1S7vViYuzCEo5/BBQ3G7/CVWgzqyJdX+6Ui9FeCl1B+hA=
 # SIG # End signature block
