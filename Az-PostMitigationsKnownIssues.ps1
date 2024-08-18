@@ -7,7 +7,10 @@
 # Mitigations
 #-----------------------------------------------------------------------------------------------------------------
 
-    If ([version]$Global:InstalledVersionMainModule.Version -ge [version]12.0.0 )
+    # Forcing a maximum/specific version
+    $global:ModuleRequiredVersion = $null
+
+    If ([version]$Global:InstalledVersionMainModule.Version -ge [version]"12.0.0" )
         {
             $Setting = get-azconfig -EnableLoginByWam
             If ($Setting.Value -eq $true)

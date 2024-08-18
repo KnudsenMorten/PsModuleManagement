@@ -2,11 +2,13 @@
 # Variables
 #-----------------------------------------------------------------------------------------------------------------
     $global:TerminateSession      = $false
-    $global:ModuleRequiredVersion = "3.4"
 
 #-----------------------------------------------------------------------------------------------------------------
 # Mitigations
 #-----------------------------------------------------------------------------------------------------------------
+
+    # Forcing a maximum/specific version
+    $global:ModuleRequiredVersion = "3.4"
 
     Write-host "Version: $($Global:InstalledVersionMainModule.Version)"
     write-host ""
@@ -26,4 +28,3 @@
 
             $global:TerminateSession = $true
         }
-

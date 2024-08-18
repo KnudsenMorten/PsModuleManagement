@@ -7,8 +7,8 @@
 # Mitigations
 #-----------------------------------------------------------------------------------------------------------------
 
-    If ([version]$Global:InstalledVersionMainModule.Version -ge [version]12.0.0 )
-        {
-            ##
-        }
+    # Forcing a maximum/specific version
+    $global:ModuleRequiredVersion = $null
 
+    Write-host "Version: $($Global:InstalledVersionMainModule.Version)"
+    write-host ""
