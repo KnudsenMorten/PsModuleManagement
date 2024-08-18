@@ -8,14 +8,14 @@
 #-----------------------------------------------------------------------------------------------------------------
 
     # Forcing a maximum/specific version
-    $global:ModuleRequiredVersion = "3.4"
+    $global:ModuleRequiredVersion = "3.4.0"
 
     Write-host "Version: $($Global:InstalledVersionMainModule.Version)"
     write-host ""
 
-    If ([version]$Global:InstalledVersionMainModule.Version -ge [version]"3.5.0" )
+    If ([version]$Global:InstalledVersionMainModule.Version -ge [version]$global:ModuleRequiredVersion )
         {
-            write-host "Downgrade manually to v3.4 ... Please Wait !!"
+            write-host "Downgrade manually to v3.4.0 ... Please Wait !!"
             write-host ""
             write-host "Reason:"
             write-host "ExchangeOnlineManagement 3.5.1 uses version 8.0.23.53103 of System.Text.Json.dll"
