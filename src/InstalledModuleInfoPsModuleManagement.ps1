@@ -13,8 +13,11 @@ Function InstalledModuleInfoPsModuleManagement
             [Parameter()]
                 [switch]$GetOldVersions,
             [Parameter()]
-                [switch]$CheckInstallation
-
+                [switch]$CheckInstallation,
+            [Parameter()]
+    [AllowEmptyString()]
+           [AllowNull()]
+                [string]$ModuleRequiredVersion
          )
 
     If ($CheckInstallation)
@@ -35,13 +38,27 @@ Function InstalledModuleInfoPsModuleManagement
                             write-host "Installing module $($MainModule) as it wasn't found ... Please Wait !"
                             Try
                                 {
-                                    install-module $MainModule -force -Scope AllUsers -AllowClobber -ErrorAction Stop
+                                    If ($ModuleRequiredVersion)
+                                        {
+                                            install-module $MainModule -force -Scope AllUsers -RequiredVersion $ModuleRequiredVersion  -AllowClobber -ErrorAction Stop
+                                        }
+                                    Else
+                                        {
+                                            install-module $MainModule -force -Scope AllUsers -AllowClobber -ErrorAction Stop
+                                        }
                                 }
                             Catch
                                 {
                                     Try
                                         {
-                                            install-module $MainModule -force -Scope AllUsers -ErrorAction Stop
+                                            If ($ModuleRequiredVersion)
+                                                {
+                                                    install-module $MainModule -force -Scope AllUsers -RequiredVersion $ModuleRequiredVersion -ErrorAction Stop
+                                                }
+                                            Else
+                                                {
+                                                    install-module $MainModule -force -Scope AllUsers -ErrorAction Stop
+                                                }
                                         }
                                     Catch
                                         {
@@ -156,8 +173,8 @@ Function InstalledModuleInfoPsModuleManagement
 # SIG # Begin signature block
 # MIIXAgYJKoZIhvcNAQcCoIIW8zCCFu8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUIlJjRslhg4LvOUZ6B6ztUDkJ
-# 8pygghNiMIIFojCCBIqgAwIBAgIQeAMYQkVwikHPbwG47rSpVDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUTj6AdDNur5L/afOVP+637Y0f
+# OcGgghNiMIIFojCCBIqgAwIBAgIQeAMYQkVwikHPbwG47rSpVDANBgkqhkiG9w0B
 # AQwFADBMMSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3QgQ0EgLSBSMzETMBEGA1UE
 # ChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbjAeFw0yMDA3MjgwMDAw
 # MDBaFw0yOTAzMTgwMDAwMDBaMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9i
@@ -265,16 +282,16 @@ Function InstalledModuleInfoPsModuleManagement
 # U2lnbiBHQ0MgUjQ1IENvZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJ
 # BgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0B
 # CQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAj
-# BgkqhkiG9w0BCQQxFgQUiyO8+0oiHSSA+7OJ5OsIvvPoiBMwDQYJKoZIhvcNAQEB
-# BQAEggIAiQK1mbsACaCRFSZvR6+G7DP9oS2goGqA1w+cHIqAe3wvTwisj41iH067
-# JHmQkcHORr0nHe7IzzuiT2D4Py+nr86uZYJMyoun/4nVBfwNcf5dR57F/wKjwnrY
-# F41DGJuQti5sUIkC0W53rLP0H8zjedo13zsFQK4AtbOHrk01mf9HjrTIaNvxw9X0
-# 7auqlQcIHthU7yIeXkIa3nw/aBRtCsmlZvjUhycHHwQYQZi2Xqic6nvYDK8ZQfvv
-# DgUc0yHnczPFlRyJfdmyNI7XbryiuP/zF6EhzdmnUQZid1uDbQEg/iHFOF+g2KYl
-# v/s3yHtNp0iSQwDOiLVFNJx4Yc41mPgG8PKbBiWUl6BuZfwTnVJZ8Yp43v9eYY8i
-# GdX2FpAlqY/kWbHmrXd1Q5gQlVDJQFXMssXhIb+tf+HtnHRNp4QqtdBwUdFqdqsw
-# KGYZKbVGBPJCtp+gd2o2a4vPJa7lrNEVgr/O13jk1Ptn1iORND4pXo7spj4sfZRT
-# 1etLvxNjVeJ0pUtnrEI4QSolV3iT8kaXl7ELj3oCROcLP53l2KCsxvsChowYAeDK
-# N68QHAY25oT+E0UPDrwDszMST10FUsResRCiDehpyBzmTSBf7ty82H1Wa7D+79ih
-# V+vrH39Z83RmDGh2C8kAvOpXOzkPjd7WFgzWfkCFaXfJRDaOgYc=
+# BgkqhkiG9w0BCQQxFgQU8RYLardsb3QHlGATpX3nSE54dJEwDQYJKoZIhvcNAQEB
+# BQAEggIAQxR6Ej74hNq7P9YL9PPV9lp3eU2lAaxU85TvTmzpPf9fUKjKMqOIIfQG
+# 2+rco58RRumEdAhae64dQQcCdXDh4MBGHnjJq6Iapb+pwQ1Kfn+Lx0Psl1j3KC7K
+# 7ipFLYcLMwoi0ldvf05k/1AAVyN3UsF4AYqSQ2pnnv6BhQFkdIkm61qCyjWeioQu
+# c2ULLvBFYTbTBmAfbm/CE6fbp+csuS+XlMSDEK4JwCeLZn7UQlSDopx6Lfq/wcH/
+# iKVydzNTwyPZQQbW1Tm+4Y8NOa91/6V1B+4o6etzNXKYsMoVusksoB8gHWo5ZkpI
+# dhpojUI9rUuly908atvagUQLh+OdAj7MNZDmy1nxi1ZHTc08f1o5InBSxHTizcpc
+# LO3Oor4iE6JFLsbgdAm4NOjLf3s7pGYC5ZivMXIS/cQP9IPnI/+fy3izrJnQqUZD
+# l2hi8z2yrOywO7fKaQh0VZQngjFcT5VjDqH0b7yHHa92UXdw0VgXx/aCo/MtZZc5
+# QjwFHFgwB23g1NE4h3Oa2MfslGjkh4SCdqKHFN7jZ2+vXqkDS87Jsl4vaMdd1Byc
+# Fri1Zw1y4wQF2sVjt+qaDAswNicqAJ2szLwHphRkJMqtBiUCEh4xV6m7cORdXdNz
+# bLzQFztA0Tst6X8Pq91vrLGiV7m050ElvTlROk9x3QukHd3P+YE=
 # SIG # End signature block
