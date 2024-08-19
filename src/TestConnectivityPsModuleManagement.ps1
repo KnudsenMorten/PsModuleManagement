@@ -30,7 +30,7 @@ Function TestConnectivityPsModuleManagement
     $ErrorsDetected = $False
 
     write-host ""
-    write-host "Testing connectivity with $($MainModule) using Entra App & Secret"
+    write-host "Testing connectivity with $($MainModule)"
 
     If ($AuthModule)
         {
@@ -143,8 +143,8 @@ Function TestConnectivityPsModuleManagement
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU7u9tMa6BcYm9hL7VBmGvZNFM
-# iTuggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUNUBWRDGWe0vrRwvKeg8Z6Yob
+# RFOggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -223,16 +223,16 @@ Function TestConnectivityPsModuleManagement
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# f61ZcgpKmSULvygOLTk1mL3iHRowDQYJKoZIhvcNAQEBBQAEggIAtG9yttZJImM9
-# rziRO/hFq7IOWcWx+M3quU9s2Vkilgvxv5d2YlIfSuXK4SJydWwOMnKYcXWwlDT5
-# V8iOoDNGrwW9jLNvg9AoLSyTf2YZ/ZHQdx1dta088kSPC/jXESx+LPmoQjEj310+
-# wLhKYWWiE10BT2aWaylPpLC+hqZa0kIcZtVqiGifUwGqvR3tjO27iGXgh1syezRd
-# VN0bKPf6SyoFneRWslrf8j++3Z8bmESSqHMBepzqDp/70NCwabNS+WIGNrfDDvUM
-# zmrRnVL3ow8q4wqIzUa9JYX3TiVQj0qHo8Y1FVbcNqOOsXI6qJ3jKXMpz0Yx3IsO
-# hvdEbLtz+hukBuPXEa80wuH68qPuDazMYn9s3Xzj6iho5GJUx5iGJ1f0NV1eNoPs
-# rXl7m0QvVLp2RVCQBNcZJhh1Oz0JvWBCX6PmKa9BleMOnbDInR34KtR2si6waA5B
-# SgnNLt85iCveVVnxZttiDvDEm9mJlPd1Tb50j1yrGiJlD3n8CCNCNCRi+7CsU0T5
-# n3xLW6BlQYGdBCqdEyQFmfYs9T8VmcDNIU5m3X0YOW19mi/2/jLEXmFmjNZcmovq
-# JGSZCFjWt9aq0AMKdv77TXE9Pur1ZjSwi39BOt72skqiQpds2o1S7vViYuzCEo5/
-# BBQ3G7/CVWgzqyJdX+6Ui9FeCl1B+hA=
+# xYRoD/igVkzHh8g7OZFDeOwfYzUwDQYJKoZIhvcNAQEBBQAEggIAa2SDYx53sVir
+# Rzuol7kFS0cbSoqhNZuPrWJi89SCnfz6cM0+sN8+ziwiME+/GcZtpXDWwsboGkCl
+# 9nLfQ2+yQQC4qGYY59iCFC/s0PApu0Oy3l4PpFVh3b/CR3fFuY8VrABn/ASq9ywN
+# eCokwDz+x9FZFNqnsi4LoNp2KOE4b5E5kcHQq6lYupnwsKhioeSqhlXW/YjiVgq6
+# pjobh7jWCnpATy2+mAbftltmjrQGlQA4O01DEm8TnaZerfaZN1yqGZotULbkP3Ma
+# G3D0uHoOFWUmN7x2pg7+x3fpM3xPat/Dmzkydj9CTKxS3dml2t7G/VTWOwhlx2eP
+# fOTwdruOhe52RswuZVmmtGETuxvwhKzpeH7xCdOxtcYdY+06eMPTGnXuBRjfvwJ8
+# 5hMU2Roc49C7g+pbfRA47QRN+3qhaN5PxlvYn+NaZchyyHrzXNVwzsDiIMzp282q
+# FBe+opv0WGZaHmiOzsVpB6gm6dPSAMec0MgX3VsEJRcrjTirbmyC8fcGsJ1VC8af
+# E6P3FLicMZ4YVZCqCl9OOJXZG/vr8/UyZXPBpOEJB/2E5lCGJxqHwlhQTPZpz+ux
+# PDvSYDiSGm/5S7r+eJVL2QU8U45HLq0vO0psTFNXB/wLhMmGZBCnsqqJTIsXBJn3
+# ASIVZ0/ocdt1ehkGqFjrjzkTUajCSxc=
 # SIG # End signature block

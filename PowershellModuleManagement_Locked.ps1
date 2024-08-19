@@ -548,6 +548,8 @@ ForEach ($Module in $Modules)
                                                     -SMTP_Subject "[$($Description)] SUCCESS: Starting Automation service(s) again" `
                                                     -SMTP_Body "<font color=black>All critical Powershell modules are working as expected on $($Description)</font><br><br>" `
                                                     -Description $Description
+            write-host "Exit SUCCESS (Exit 0)"
+            Exit 0
         }
     Else
         {
@@ -561,6 +563,8 @@ ForEach ($Module in $Modules)
                                                     -SMTP_Subject "[$($Description)] CRITICAL: Automation Windows service(s) cannot be started as one or more errors occurred" `
                                                     -SMTP_Body "<font color=black>Critical powershell module(s) detected as broken on $($Description)</font><br><br>" `
                                                     -Description $Description
+            write-host "Exit FAILURE (Exit 1)"
+            Exit 1
         }
 
 
