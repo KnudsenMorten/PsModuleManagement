@@ -111,7 +111,7 @@ Function Manage-Powershell-Module
     Manage-Powershell-Module -ModuleName $ModuleName -Scope AllUsers
     Import-module PsModuleManagement -Global -force -DisableNameChecking
 
-
+ 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ##################################################################################################################################################################################
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -216,7 +216,8 @@ ForEach ($Module in $Modules)
                                                         -SMTP_To $SMTP_To `
                                                         -SMTP_Subject "[$($Description)] SUCCESS: $($MainModule) version: $($CurrentInstalledVersion) is working" `
                                                         -SMTP_Body "<font color=black>$($MainModule) is working on $($Description)</font><br><br>" `
-                                                        -Description $Description
+                                                        -Description $Description `
+                                                        -UseSSL $global:SMTP_UseSSL
             }
 
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -235,7 +236,8 @@ ForEach ($Module in $Modules)
                                                         -SMTP_To $SMTP_To `
                                                         -SMTP_Subject "[$($Description)] CRITICAL: $($MainModule) versions seems broken - Complete Re-installation in progress" `
                                                         -SMTP_Body "<font color=red>Complete $($MainModule) re-installation will now be tried on $($Description) as no working $($MainModule) versions were found</font><br><br>" `
-                                                        -Description $Description
+                                                        -Description $Description `
+                                                        -UseSSL $global:SMTP_UseSSL
 
                 # Re-installing current Main module to try to fix current state!
                     If ($InstalledAllVersionsMainModule)
@@ -307,7 +309,8 @@ ForEach ($Module in $Modules)
                                                                             -SMTP_To $SMTP_To `
                                                                             -SMTP_Subject "[$($Description)] CRITICAL: Complete re-installation of $($MainModule) failed" `
                                                                             -SMTP_Body "<font color=red>$($MainModule) issues were detected on $($Description). System might need to be rebooted, or there could be a conflict with other modules like Az</font><br><br>" `
-                                                                            -Description $Description
+                                                                            -Description $Description `
+                                                                            -UseSSL $global:SMTP_UseSSL
                                 }
                             ElseIf (!($ConnectivityErrorsDetectedCurrent))
                                 {
@@ -322,7 +325,8 @@ ForEach ($Module in $Modules)
                                                                             -SMTP_To $SMTP_To `
                                                                             -SMTP_Subject "[$($Description)] SUCCESS: $($MainModule) re-installation succeeded" `
                                                                             -SMTP_Body "<font color=red>Complete $($MainModule) re-installation succeeded on $($Description)</font><br><br>" `
-                                                                            -Description $Description
+                                                                            -Description $Description `
+                                                                            -UseSSL $global:SMTP_UseSSL
                                 }
                         }
             }
@@ -406,7 +410,8 @@ ForEach ($Module in $Modules)
                                                                         -SMTP_To $SMTP_To `
                                                                         -SMTP_Subject "[$($Description)] SUCCESS: $($MainModule) upgraded to $($NewestOnlineVersion)" `
                                                                         -SMTP_Body "<font color=red>$($MainModule) was successfully upgraded to $($NewestOnlineVersion) on $($Description)</font><br><br>" `
-                                                                        -Description $Description
+                                                                        -Description $Description `
+                                                                        -UseSSL $global:SMTP_UseSSL
                             }
                         ElseIf ($ConnectivityErrorsDetected)   # Errors detected
                             {
@@ -421,7 +426,8 @@ ForEach ($Module in $Modules)
                                                                         -SMTP_To $SMTP_To `
                                                                         -SMTP_Subject "[$($Description)] ISSUE: New version $($NewestOnlineVersion) of $($MainModule) seems broken - Rollback in progress" `
                                                                         -SMTP_Body "<font color=red>$($MainModule) issues was detected on $($Description)</font><br><br>" `
-                                                                        -Description $Description
+                                                                        -Description $Description `
+                                                                        -UseSSL $global:SMTP_UseSSL
 
                                 # Removing older version
                                     Write-Host "Removing older version $($NewestOnlineVersion) of $($MainModule) ... Please Wait !"
@@ -456,7 +462,8 @@ ForEach ($Module in $Modules)
                                                                                     -SMTP_To $SMTP_To `
                                                                                     -SMTP_Subject "[$($Description)] ISSUE: Rollback of $($MainModule) failed" `
                                                                                     -SMTP_Body "<font color=red>$($MainModule) issues was detected on $($Description)</font><br><br>" `
-                                                                                    -Description $Description
+                                                                                    -Description $Description `
+                                                                                    -UseSSL $global:SMTP_UseSSL
                                         }
                                     Else
                                         {
@@ -472,7 +479,8 @@ ForEach ($Module in $Modules)
                                                                                     -SMTP_To $SMTP_To `
                                                                                     -SMTP_Subject "[$($Description)] SUCCESS: Rollback to version of $($MainModule) succeeded" `
                                                                                     -SMTP_Body "<font color=black>$($MainModule) rollback to prior version succeeded on $($Description)</font><br><br>" `
-                                                                                    -Description $Description
+                                                                                    -Description $Description `
+                                                                                    -UseSSL $global:SMTP_UseSSL
                                         }
                             }
                 }
@@ -547,7 +555,8 @@ ForEach ($Module in $Modules)
                                                     -SMTP_To $SMTP_To `
                                                     -SMTP_Subject "[$($Description)] SUCCESS: Starting Automation service(s) again" `
                                                     -SMTP_Body "<font color=black>All critical Powershell modules are working as expected on $($Description)</font><br><br>" `
-                                                    -Description $Description
+                                                    -Description $Description `
+                                                    -UseSSL $global:SMTP_UseSSL
             write-host "Exit SUCCESS (Exit 0)"
             Exit 0
         }
@@ -562,7 +571,8 @@ ForEach ($Module in $Modules)
                                                     -SMTP_To $SMTP_To `
                                                     -SMTP_Subject "[$($Description)] CRITICAL: Automation Windows service(s) cannot be started as one or more errors occurred" `
                                                     -SMTP_Body "<font color=black>Critical powershell module(s) detected as broken on $($Description)</font><br><br>" `
-                                                    -Description $Description
+                                                    -Description $Description `
+                                                    -UseSSL $global:SMTP_UseSSL
             write-host "Exit FAILURE (Exit 1)"
             Exit 1
         }
