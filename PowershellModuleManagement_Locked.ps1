@@ -130,18 +130,49 @@ $Modules = @(
                                     ModuleRequiredVersion             = $null
                                  }
                 [PSCustomObject]@{
+                                    MainModule                        = "Az.ConnectedMachine"
+                                    AuthModule                        = $null
+                                    PostMitigationScriptKnownIssues   = "Az-PostMitigationsKnownIssues.ps1"
+                                    ModuleRequiredVersion             = $null
+                                 }
+                [PSCustomObject]@{
+                                    MainModule                        = "Az.Peering"
+                                    AuthModule                        = $null
+                                    PostMitigationScriptKnownIssues   = "Az-PostMitigationsKnownIssues.ps1"
+                                    ModuleRequiredVersion             = $null
+                                 }
+                [PSCustomObject]@{
+                                    MainModule                        = "Az.DataProtection"
+                                    AuthModule                        = $null
+                                    PostMitigationScriptKnownIssues   = "Az-PostMitigationsKnownIssues.ps1"
+                                    ModuleRequiredVersion             = $null
+                                 }
+                [PSCustomObject]@{
+                                    MainModule                        = "Az.ResourceGraph"
+                                    AuthModule                        = $null
+                                    PostMitigationScriptKnownIssues   = "Az-PostMitigationsKnownIssues.ps1"
+                                    ModuleRequiredVersion             = $null
+                                 }
+                [PSCustomObject]@{
                                     MainModule                        = "Microsoft.Graph"
                                     AuthModule                        = "Microsoft.Graph.Authentication"
                                     PostMitigationScriptKnownIssues   = "Microsoft.Graph-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = $null
                                  }
                 [PSCustomObject]@{
+                                    MainModule                        = "Microsoft.Graph.Intune"
+                                    AuthModule                        = $null
+                                    PostMitigationScriptKnownIssues   = "Microsoft.Graph-PostMitigationsKnownIssues.ps1"
+                                    ModuleRequiredVersion             = $null
+                                 }
+                [PSCustomObject]@{
                                     MainModule                        = "Microsoft.Graph.Beta"
-                                    AuthModule                        = "Microsoft.Graph.Authentication"
+                                    AuthModule                        = $null
                                     PostMitigationScriptKnownIssues   = "Microsoft.Graph.Beta-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = $null
                                  }
             )
+
 
 $ModulePos = 0
 $ModulesTotal = $Modules.count
@@ -186,9 +217,9 @@ ForEach ($Module in $Modules)
         # Test if Module can connect, based on installed versions (fallback)
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-            $ConnectivityErrorsDetected = $null
+            $ConnectivityErrorsDetected = $False
 
-            If ($CurrentInstalledVersion)
+            If ( ($CurrentInstalledVersion) -and ($global:AuthModule) )
                 {
                     $ConnectivityErrorsDetected = TestConnectivityPsModuleManagement -Entra_App_ApplicationID $Entra_App_ApplicationID `
                                                                                      -Entra_App_CertificateThumbprint $Entra_App_CertificateThumbprint `
@@ -203,7 +234,7 @@ ForEach ($Module in $Modules)
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
         # Connectivity works with current version
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
-        If (!($ConnectivityErrorsDetected))
+        If ( (!($ConnectivityErrorsDetected)) -and ($global:AuthModule) )
             {
                 $ConnectivityInstalledVersions = "SUCCESS"
 
@@ -223,7 +254,7 @@ ForEach ($Module in $Modules)
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
         # Errors detected with installed version - lets try to uninstall current main-module !
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
-        ElseIf ($ConnectivityErrorsDetected)
+        ElseIf ( ($ConnectivityErrorsDetected) -and ($global:AuthModule) )
             {
                 $ConnectivityInstalledVersions = "CRITICAL"
             
@@ -388,100 +419,103 @@ ForEach ($Module in $Modules)
                         InstalledModuleInfoPsModuleManagement -MainModule $MainModule -AuthModule $AuthModule -MaintenancePowershellServices $MaintenancePowershellServices -MaintenancePowershellProcesses $MaintenancePowershellProcesses
 
                     # Test connectivity
-                        $ConnectivityErrorsDetected = TestConnectivityPsModuleManagement -Entra_App_ApplicationID $Entra_App_ApplicationID `
-                                                                                         -Entra_App_CertificateThumbprint $Entra_App_CertificateThumbprint `
-                                                                                         -Entra_App_TenantID $Entra_App_TenantID `
-                                                                                         -Entra_TenantName $Entra_TenantName `
-                                                                                         -MainModule $MainModule `
-                                                                                         -AuthModule $AuthModule `
-                                                                                         -AuthModuleRequiredVersion $AuthModuleRequiredVersion `
-                                                                                         -AzSubscriptionId $AzSubscriptionId
-
-                        If (!($ConnectivityErrorsDetected))   # No Errors detected - Upgrade succeeded
+                        If ($global:AuthModule)
                             {
-                                $UpgradeSuccess = $true
+                                $ConnectivityErrorsDetected = TestConnectivityPsModuleManagement -Entra_App_ApplicationID $Entra_App_ApplicationID `
+                                                                                                 -Entra_App_CertificateThumbprint $Entra_App_CertificateThumbprint `
+                                                                                                 -Entra_App_TenantID $Entra_App_TenantID `
+                                                                                                 -Entra_TenantName $Entra_TenantName `
+                                                                                                 -MainModule $MainModule `
+                                                                                                 -AuthModule $AuthModule `
+                                                                                                 -AuthModuleRequiredVersion $AuthModuleRequiredVersion `
+                                                                                                 -AzSubscriptionId $AzSubscriptionId
 
-                                SendMailNotificationsPsModuleManagement -SendMailAlerts $SendMailAlertsSuccess `
-                                                                        -SMTP_Host $SMTP_Host `
-                                                                        -SMTP_UserId $SMTP_UserId `
-                                                                        -SMTP_Password $SMTP_Password `
-                                                                        -SMTP_Port $SMTP_Port `
-                                                                        -SMTP_From $SMTP_From `
-                                                                        -SMTP_To $SMTP_To `
-                                                                        -SMTP_Subject "[$($Description)] SUCCESS: $($MainModule) upgraded to $($NewestOnlineVersion)" `
-                                                                        -SMTP_Body "<font color=red>$($MainModule) was successfully upgraded to $($NewestOnlineVersion) on $($Description)</font><br><br>" `
-                                                                        -Description $Description `
-                                                                        -UseSSL $global:SMTP_UseSSL
-                            }
-                        ElseIf ($ConnectivityErrorsDetected)   # Errors detected
-                            {
-                                write-host "Errors detected with new version ..... removing new version (reverting back to prior working version) !"
+                                If (!($ConnectivityErrorsDetected))   # No Errors detected - Upgrade succeeded
+                                    {
+                                        $UpgradeSuccess = $true
 
-                                SendMailNotificationsPsModuleManagement -SendMailAlerts $SendMailAlertsIssues `
-                                                                        -SMTP_Host $SMTP_Host `
-                                                                        -SMTP_UserId $SMTP_UserId `
-                                                                        -SMTP_Password $SMTP_Password `
-                                                                        -SMTP_Port $SMTP_Port `
-                                                                        -SMTP_From $SMTP_From `
-                                                                        -SMTP_To $SMTP_To `
-                                                                        -SMTP_Subject "[$($Description)] ISSUE: New version $($NewestOnlineVersion) of $($MainModule) seems broken - Rollback in progress" `
-                                                                        -SMTP_Body "<font color=red>$($MainModule) issues was detected on $($Description)</font><br><br>" `
-                                                                        -Description $Description `
-                                                                        -UseSSL $global:SMTP_UseSSL
+                                        SendMailNotificationsPsModuleManagement -SendMailAlerts $SendMailAlertsSuccess `
+                                                                                -SMTP_Host $SMTP_Host `
+                                                                                -SMTP_UserId $SMTP_UserId `
+                                                                                -SMTP_Password $SMTP_Password `
+                                                                                -SMTP_Port $SMTP_Port `
+                                                                                -SMTP_From $SMTP_From `
+                                                                                -SMTP_To $SMTP_To `
+                                                                                -SMTP_Subject "[$($Description)] SUCCESS: $($MainModule) upgraded to $($NewestOnlineVersion)" `
+                                                                                -SMTP_Body "<font color=red>$($MainModule) was successfully upgraded to $($NewestOnlineVersion) on $($Description)</font><br><br>" `
+                                                                                -Description $Description `
+                                                                                -UseSSL $global:SMTP_UseSSL
+                                    }
+                                ElseIf ($ConnectivityErrorsDetected)   # Errors detected
+                                    {
+                                        write-host "Errors detected with new version ..... removing new version (reverting back to prior working version) !"
 
-                                # Removing older version
-                                    Write-Host "Removing older version $($NewestOnlineVersion) of $($MainModule) ... Please Wait !"
+                                        SendMailNotificationsPsModuleManagement -SendMailAlerts $SendMailAlertsIssues `
+                                                                                -SMTP_Host $SMTP_Host `
+                                                                                -SMTP_UserId $SMTP_UserId `
+                                                                                -SMTP_Password $SMTP_Password `
+                                                                                -SMTP_Port $SMTP_Port `
+                                                                                -SMTP_From $SMTP_From `
+                                                                                -SMTP_To $SMTP_To `
+                                                                                -SMTP_Subject "[$($Description)] ISSUE: New version $($NewestOnlineVersion) of $($MainModule) seems broken - Rollback in progress" `
+                                                                                -SMTP_Body "<font color=red>$($MainModule) issues was detected on $($Description)</font><br><br>" `
+                                                                                -Description $Description `
+                                                                                -UseSSL $global:SMTP_UseSSL
 
-                                    Uninstall-module -Name $MainModule -RequiredVersion $NewestOnlineVersion -Force -ErrorAction SilentlyContinue
+                                        # Removing older version
+                                            Write-Host "Removing older version $($NewestOnlineVersion) of $($MainModule) ... Please Wait !"
+
+                                            Uninstall-module -Name $MainModule -RequiredVersion $NewestOnlineVersion -Force -ErrorAction SilentlyContinue
                     
-                                # Installed Versions
-                                    InstalledModuleInfoPsModuleManagement -MainModule $MainModule -AuthModule $AuthModule -MaintenancePowershellServices $MaintenancePowershellServices -MaintenancePowershellProcesses $MaintenancePowershellProcesses
+                                        # Installed Versions
+                                            InstalledModuleInfoPsModuleManagement -MainModule $MainModule -AuthModule $AuthModule -MaintenancePowershellServices $MaintenancePowershellServices -MaintenancePowershellProcesses $MaintenancePowershellProcesses
 
-                                # Test connectivity
-                                    $ConnectivityErrorsDetected = TestConnectivityPsModuleManagement -Entra_App_ApplicationID $Entra_App_ApplicationID `
-                                                                                                     -Entra_App_CertificateThumbprint $Entra_App_CertificateThumbprint `
-                                                                                                     -Entra_App_TenantID $Entra_App_TenantID `
-                                                                                                     -Entra_TenantName $Entra_TenantName `
-                                                                                                     -MainModule $MainModule `
-                                                                                                     -AuthModule $AuthModule `
-                                                                                                     -AuthModuleRequiredVersion $AuthModuleRequiredVersion `
-                                                                                                     -AzSubscriptionId $AzSubscriptionId
+                                        # Test connectivity
+                                            $ConnectivityErrorsDetected = TestConnectivityPsModuleManagement -Entra_App_ApplicationID $Entra_App_ApplicationID `
+                                                                                                             -Entra_App_CertificateThumbprint $Entra_App_CertificateThumbprint `
+                                                                                                             -Entra_App_TenantID $Entra_App_TenantID `
+                                                                                                             -Entra_TenantName $Entra_TenantName `
+                                                                                                             -MainModule $MainModule `
+                                                                                                             -AuthModule $AuthModule `
+                                                                                                             -AuthModuleRequiredVersion $AuthModuleRequiredVersion `
+                                                                                                             -AzSubscriptionId $AzSubscriptionId
 
-                                    If ($ConnectivityErrorsDetected)   # Errors detected
-                                        {
-                                            $UpgradeSuccess = $false
-                                            $UpgradeRollBack = $false
-                                            $CriticalErrorsOccured = $true
+                                            If ($ConnectivityErrorsDetected)   # Errors detected
+                                                {
+                                                    $UpgradeSuccess = $false
+                                                    $UpgradeRollBack = $false
+                                                    $CriticalErrorsOccured = $true
 
-                                            SendMailNotificationsPsModuleManagement -SendMailAlerts $SendMailAlertsIssues `
-                                                                                    -SMTP_Host $SMTP_Host `
-                                                                                    -SMTP_UserId $SMTP_UserId `
-                                                                                    -SMTP_Password $SMTP_Password `
-                                                                                    -SMTP_Port $SMTP_Port `
-                                                                                    -SMTP_From $SMTP_From `
-                                                                                    -SMTP_To $SMTP_To `
-                                                                                    -SMTP_Subject "[$($Description)] ISSUE: Rollback of $($MainModule) failed" `
-                                                                                    -SMTP_Body "<font color=red>$($MainModule) issues was detected on $($Description)</font><br><br>" `
-                                                                                    -Description $Description `
-                                                                                    -UseSSL $global:SMTP_UseSSL
-                                        }
-                                    Else
-                                        {
-                                            $UpgradeSuccess = $false
-                                            $UpgradeRollBack = $true
+                                                    SendMailNotificationsPsModuleManagement -SendMailAlerts $SendMailAlertsIssues `
+                                                                                            -SMTP_Host $SMTP_Host `
+                                                                                            -SMTP_UserId $SMTP_UserId `
+                                                                                            -SMTP_Password $SMTP_Password `
+                                                                                            -SMTP_Port $SMTP_Port `
+                                                                                            -SMTP_From $SMTP_From `
+                                                                                            -SMTP_To $SMTP_To `
+                                                                                            -SMTP_Subject "[$($Description)] ISSUE: Rollback of $($MainModule) failed" `
+                                                                                            -SMTP_Body "<font color=red>$($MainModule) issues was detected on $($Description)</font><br><br>" `
+                                                                                            -Description $Description `
+                                                                                            -UseSSL $global:SMTP_UseSSL
+                                                }
+                                            Else
+                                                {
+                                                    $UpgradeSuccess = $false
+                                                    $UpgradeRollBack = $true
 
-                                            SendMailNotificationsPsModuleManagement -SendMailAlerts $SendMailAlertsIssues `
-                                                                                    -SMTP_Host $SMTP_Host `
-                                                                                    -SMTP_UserId $SMTP_UserId `
-                                                                                    -SMTP_Password $SMTP_Password `
-                                                                                    -SMTP_Port $SMTP_Port `
-                                                                                    -SMTP_From $SMTP_From `
-                                                                                    -SMTP_To $SMTP_To `
-                                                                                    -SMTP_Subject "[$($Description)] SUCCESS: Rollback to version of $($MainModule) succeeded" `
-                                                                                    -SMTP_Body "<font color=black>$($MainModule) rollback to prior version succeeded on $($Description)</font><br><br>" `
-                                                                                    -Description $Description `
-                                                                                    -UseSSL $global:SMTP_UseSSL
-                                        }
+                                                    SendMailNotificationsPsModuleManagement -SendMailAlerts $SendMailAlertsIssues `
+                                                                                            -SMTP_Host $SMTP_Host `
+                                                                                            -SMTP_UserId $SMTP_UserId `
+                                                                                            -SMTP_Password $SMTP_Password `
+                                                                                            -SMTP_Port $SMTP_Port `
+                                                                                            -SMTP_From $SMTP_From `
+                                                                                            -SMTP_To $SMTP_To `
+                                                                                            -SMTP_Subject "[$($Description)] SUCCESS: Rollback to version of $($MainModule) succeeded" `
+                                                                                            -SMTP_Body "<font color=black>$($MainModule) rollback to prior version succeeded on $($Description)</font><br><br>" `
+                                                                                            -Description $Description `
+                                                                                            -UseSSL $global:SMTP_UseSSL
+                                                }
+                                    }
                             }
                 }
             Else
