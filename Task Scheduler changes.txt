@@ -1,0 +1,12 @@
+-executionpolicy bypass -command ". C:\SCRIPTS\PowershellModuleManagement\PowershellModuleManagement.ps1; exit $LASTEXITCODE"
+
+<QueryList>
+  <Query Id="0" Path="Microsoft-Windows-TaskScheduler/Operational">
+    <Select Path="Microsoft-Windows-TaskScheduler/Operational">
+      *[System[(Level=4 or Level=0) and (EventID=201)]]
+        and
+      *[EventData[(Data[@Name="ResultCode"]!=0)]]
+        and
+      *[EventData[(Data[@Name="TaskName"]='\PowershellModuleManagement')]] </Select>
+  </Query>
+</QueryList>

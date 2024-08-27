@@ -1,9 +1,9 @@
-﻿$ScriptPath = "C:\SCRIPTS\PowershellModuleManagement\PowershellModuleManagement.ps1"
+﻿$ScriptPath = "D:\SCRIPTS\PowershellModuleManagement\PowershellModuleManagement.ps1"
 
 $taskname = "PowershellModuleManagement"
 $taskdescription = "2LINKIT - Monitor and Update Critical Powershell Modules"
 
-$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-executionpolicy bypass -file `"$($ScriptPath)`""
+$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-executionpolicy bypass -command `". $($ScriptPath); exit `$LASTEXITCODE`""
 
 $trigger =  New-ScheduledTaskTrigger -Daily -DaysInterval 1 -At 04:00
 

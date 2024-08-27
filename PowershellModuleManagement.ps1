@@ -24,6 +24,7 @@
     $global:SMTP_Port                         = 587   # smtp port
     $global:SMTP_From                         = "<insert smtp from address here>"
     $global:SMTP_To                           = @("xxx")   # insert to-addresses as array
+    $global:SMTP_UseSSL                       = $False
 
 <#
     SAMPLE
@@ -50,6 +51,8 @@
     $global:SMTP_Port                         = 587
     $global:SMTP_From                         = "svc-automation@2linkit.net"
     $global:SMTP_To                           = @("xxxxx@2linkit.net")
+    $global:SMTP_UseSSL                       = $False
+
 #>
 
 

@@ -171,6 +171,18 @@ $Modules = @(
                                     PostMitigationScriptKnownIssues   = "Microsoft.Graph.Beta-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = $null
                                  }
+                [PSCustomObject]@{
+                                    MainModule                        = "AzLogDcrIngestPS"
+                                    AuthModule                        = $null
+                                    PostMitigationScriptKnownIssues   = "AzLogDcrIngestPS-PostMitigationsKnownIssues.ps1"
+                                    ModuleRequiredVersion             = $null
+                                 }
+                [PSCustomObject]@{
+                                    MainModule                        = "MicrosoftGraphPS"
+                                    AuthModule                        = $null
+                                    PostMitigationScriptKnownIssues   = "MicrosoftGraphPS-PostMitigationsKnownIssues.ps1"
+                                    ModuleRequiredVersion             = $null
+                                 }
             )
 
 
