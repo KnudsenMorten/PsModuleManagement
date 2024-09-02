@@ -185,7 +185,6 @@ $Modules = @(
                                  }
             )
 
-
 $ModulePos = 0
 $ModulesTotal = $Modules.count
 
@@ -547,31 +546,9 @@ ForEach ($Module in $Modules)
         If ( (!($UpgradeNeeded)) -or ($UpgradeSuccess) )
             {
                 write-host ""
-                write-host "Checking if old modules of $($MainModule) shoule be removed .... please wait !"
+                write-host "Checking if old modules of $($MainModule) incl. sub-modules shoule be removed .... please wait !"
 
                 InstalledModuleInfoPsModuleManagement -MainModule $MainModule -AuthModule $AuthModule -MaintenancePowershellServices $MaintenancePowershellServices -MaintenancePowershellProcesses $MaintenancePowershellProcesses -GetOldVersions
-
-                # Main modules(s)
-                ForEach ($Module in $OldInstalledVersionsMainModule)
-                    {
-                        write-host ""
-                        write-host "Processing $($Module.Name)"
-                                
-                        # Uninstall module
-                            write-host "Removing version $($Module.Version) .... Please Wait !"
-                            Uninstall-module $Module.Name -RequiredVersion $Module.Version -Force -ErrorAction SilentlyContinue
-                    }
-
-                # Sub module(s)
-                    ForEach ($Module in $OldInstalledVersionsSubModules)
-                        {
-                            write-host ""
-                            write-host "Processing $($Module.Name)"
-                                
-                            # Uninstall module
-                                write-host "Removing version $($Module.Version) .... Please Wait !"
-                                Uninstall-module $Module.Name -RequiredVersion $Module.Version -Force -ErrorAction SilentlyContinue
-                        }
             }
     } # For Each Module....
 
