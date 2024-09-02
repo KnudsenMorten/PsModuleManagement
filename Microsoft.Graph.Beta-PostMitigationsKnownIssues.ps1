@@ -8,7 +8,5 @@
 #-----------------------------------------------------------------------------------------------------------------
 
     # Forcing a maximum/specific version
-    $global:ModuleRequiredVersion = $null
-
     Write-host "Version: $($Global:InstalledVersionMainModule.Version)"
     write-host ""
