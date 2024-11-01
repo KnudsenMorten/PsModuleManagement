@@ -549,6 +549,12 @@ ForEach ($Module in $Modules)
                 write-host "Checking if old modules of $($MainModule) incl. sub-modules shoule be removed .... please wait !"
 
                 InstalledModuleInfoPsModuleManagement -MainModule $MainModule -AuthModule $AuthModule -MaintenancePowershellServices $MaintenancePowershellServices -MaintenancePowershellProcesses $MaintenancePowershellProcesses -GetOldVersions
+
+                ForEach ($Module in $Global:OldInstalledVersionsModules)
+                    {
+                        write-host "Removing module $($Module.Name) - version $($Module.Version) ... Please Wait !"
+                        Uninstall-module -Name $Module.Name -RequiredVersion $Module.Version -Force -ErrorAction SilentlyContinue
+                    }
             }
     } # For Each Module....
 
