@@ -149,10 +149,15 @@ Function InstalledModuleInfoPsModuleManagement
 
     If ($GetOldVersions)
         {
+
             # Main Module - Getting information latest versions of main module
                 write-host ""
                 write-host "Getting info about all versions of main module $($MainModule) on local system ... Please Wait !"
                 $InstalledAllVersions = Get-module $MainModule -ListAvailable -ErrorAction SilentlyContinue
+                If (!($InstalledAllVersions))
+                    {
+                        $InstalledAllVersions = @()
+                    }
 
             # Sub modules - Getting information about latest installed version of sub-modules module
                 write-host ""
