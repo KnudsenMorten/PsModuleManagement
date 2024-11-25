@@ -121,7 +121,7 @@ $Modules = @(
                                     MainModule                        = "ExchangeOnlineManagement"
                                     AuthModule                        = $null
                                     PostMitigationScriptKnownIssues   = "ExchangeOnlineManagement-PostMitigationsKnownIssues.ps1"
-                                    ModuleRequiredVersion             = "3.4"
+                                    ModuleRequiredVersion             = "3.6"
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "Az"
