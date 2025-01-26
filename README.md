@@ -1,2 +1,0 @@
-# AzResourceGraphPS-Dev
- AzResourceGraphPS-Dev
