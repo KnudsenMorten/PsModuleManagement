@@ -178,6 +178,12 @@ $Modules = @(
                                     ModuleRequiredVersion             = $null
                                  }
                 [PSCustomObject]@{
+                                    MainModule                        = "powershell-yaml"
+                                    AuthModule                        = $null
+                                    PostMitigationScriptKnownIssues   = "powershell-yaml-PostMitigationsKnownIssues.ps1"
+                                    ModuleRequiredVersion             = $null
+                                 }
+                [PSCustomObject]@{
                                     MainModule                        = "MicrosoftGraphPS"
                                     AuthModule                        = $null
                                     PostMitigationScriptKnownIssues   = "MicrosoftGraphPS-PostMitigationsKnownIssues.ps1"
