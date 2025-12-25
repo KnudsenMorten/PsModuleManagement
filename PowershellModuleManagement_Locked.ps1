@@ -169,7 +169,7 @@ $Modules = @(
                 [PSCustomObject]@{
                                     MainModule                        = "Microsoft.Graph.Intune"
                                     AuthModule                        = $null
-                                    PostMitigationScriptKnownIssues   = $null
+                                    PostMitigationScriptKnownIssues   = "Microsoft.Graph.Intune-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = $null
                                     AuthModuleRequiredVersion         = $null
                                  }
