@@ -14,9 +14,6 @@
     # Forcing a maximum/specific version
     $global:ModuleRequiredVersion = "2.32.0"
 
-    Write-host "Version: $($Global:InstalledVersionMainModule.Version)"
-    write-host ""
-
     If ([version]$Global:InstalledVersionMainModule.Version -gt [version]$global:ModuleRequiredVersion )
         {
             write-host "Downgrade manually to $($global:ModuleRequiredVersion) ... Please Wait !!"
