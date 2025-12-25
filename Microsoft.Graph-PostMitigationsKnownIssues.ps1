@@ -27,6 +27,17 @@
             Remove-Module Microsoft.Graph.Authentication -Force -ErrorAction SilentlyContinue
             Uninstall-Module Microsoft.Graph.Authentication -AllVersions -Force
 
+            # Force remove file in use
+            $graphPaths = Get-Module Microsoft.Graph.Authentication -ListAvailable |
+                          Select-Object -ExpandProperty Path
+
+            $versionFolders = $graphPaths | ForEach-Object { Split-Path $_ -Parent } | Sort-Object -Unique
+
+            $versionFolders | ForEach-Object {
+                Write-Host "Removing: $($_)"
+                Remove-Item $_ -Recurse -Force -ErrorAction Stop
+            }
+
             uninstall-module Microsoft.Graph -AllVersions -Force
             install-module Microsoft.Graph -RequiredVersion $global:ModuleRequiredVersion -Force
 
