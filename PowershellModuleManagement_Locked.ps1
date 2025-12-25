@@ -122,72 +122,84 @@ $Modules = @(
                                     AuthModule                        = $null
                                     PostMitigationScriptKnownIssues   = "ExchangeOnlineManagement-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = "3.6"
+                                    AuthModuleRequiredVersion         = $null
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "Az"
                                     AuthModule                        = "Az.Accounts"
                                     PostMitigationScriptKnownIssues   = "Az-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = $null
+                                    AuthModuleRequiredVersion         = $null
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "Az.ConnectedMachine"
                                     AuthModule                        = $null
                                     PostMitigationScriptKnownIssues   = "Az-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = $null
+                                    AuthModuleRequiredVersion         = $null
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "Az.Peering"
                                     AuthModule                        = $null
                                     PostMitigationScriptKnownIssues   = "Az-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = $null
+                                    AuthModuleRequiredVersion         = $null
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "Az.DataProtection"
                                     AuthModule                        = $null
                                     PostMitigationScriptKnownIssues   = "Az-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = $null
+                                    AuthModuleRequiredVersion         = $null
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "Az.ResourceGraph"
                                     AuthModule                        = $null
                                     PostMitigationScriptKnownIssues   = "Az-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = $null
+                                    AuthModuleRequiredVersion         = $null
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "Microsoft.Graph"
                                     AuthModule                        = "Microsoft.Graph.Authentication"
                                     PostMitigationScriptKnownIssues   = "Microsoft.Graph-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = "2.32.0"
+                                    AuthModuleRequiredVersion         = "2.32.0"
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "Microsoft.Graph.Intune"
                                     AuthModule                        = $null
-                                    PostMitigationScriptKnownIssues   = ""
-                                    ModuleRequiredVersion             = "2.32.0"
+                                    PostMitigationScriptKnownIssues   = $null
+                                    ModuleRequiredVersion             = $null
+                                    AuthModuleRequiredVersion         = $null
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "Microsoft.Graph.Beta"
-                                    AuthModule                        = $null
+                                    AuthModule                        = "Microsoft.Graph.Authentication"
                                     PostMitigationScriptKnownIssues   = "Microsoft.Graph.Beta-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = "2.32.0"
+                                    AuthModuleRequiredVersion         = "2.32.0"
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "AzLogDcrIngestPS"
                                     AuthModule                        = $null
                                     PostMitigationScriptKnownIssues   = "AzLogDcrIngestPS-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = $null
+                                    AuthModuleRequiredVersion         = $null
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "powershell-yaml"
                                     AuthModule                        = $null
                                     PostMitigationScriptKnownIssues   = "powershell-yaml-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = $null
+                                    AuthModuleRequiredVersion         = $null
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "MicrosoftGraphPS"
                                     AuthModule                        = $null
                                     PostMitigationScriptKnownIssues   = "MicrosoftGraphPS-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = $null
+                                    AuthModuleRequiredVersion         = $null
                                  }
             )
 
@@ -201,6 +213,7 @@ ForEach ($Module in $Modules)
         $global:AuthModule                        = $Module.AuthModule
         $global:PostMitigationScriptKnownIssues   = $Module.PostMitigationScriptKnownIssues
         $global:ModuleRequiredVersion             = $Module.ModuleRequiredVersion
+        $global:AuthModuleRequiredVersion         = $Module.AuthModuleRequiredVersion
         $ModulePos                                = 1 + $ModulePos
     
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -216,6 +229,50 @@ ForEach ($Module in $Modules)
         # Check Installed versions
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
             InstalledModuleInfoPsModuleManagement -MainModule $MainModule -AuthModule $AuthModule -MaintenancePowershellServices $MaintenancePowershellServices -MaintenancePowershellProcesses $MaintenancePowershellProcesses -CheckInstallation -ModuleRequiredVersion $ModuleRequiredVersion
+
+        #-----------------------------------------------------------------------------------------------------------------------------------------------------------
+        # Remove never auth. modules if found !
+        #-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    # Forcing a maximum/specific version
+    $global:ModuleRequiredVersion = "2.32.0"
+
+    If ([version]$Global:InstalledVersionAuthModule.Version -gt [version]$global:AuthMoeRequiredVersion )
+        {
+            write-host "Downgrade manually to $($global:ModuleRequiredVersion) ... Please Wait !!"
+            write-host ""
+            
+            # Force Microsoft Graph Authentication removal
+            Disconnect-MgGraph -ErrorAction SilentlyContinue
+            Remove-Module Microsoft.Graph.Authentication -Force -ErrorAction SilentlyContinue
+            Uninstall-Module Microsoft.Graph.Authentication -AllVersions -Force
+
+            # Force remove file in use
+            $graphPaths = Get-Module Microsoft.Graph.Authentication -ListAvailable |
+                          Select-Object -ExpandProperty Path
+
+            $versionFolders = $graphPaths | ForEach-Object { Split-Path $_ -Parent } | Sort-Object -Unique
+
+            $versionFolders | ForEach-Object {
+
+                $folder = $_
+                $folderVersion = Split-Path $folder -Leaf
+
+                if ($folderVersion -eq $global:ModuleRequiredVersion) {
+                    Write-Host "Skipping required version folder: $folder"
+                    return
+                }
+
+                Write-Host "Removing: $folder"
+                Remove-Item $folder -Recurse -Force -ErrorAction SilentlyContinue
+            }
+
+            uninstall-module Microsoft.Graph.Beta -AllVersions -Force
+            install-module Microsoft.Graph.Beta -RequiredVersion $global:ModuleRequiredVersion -Force
+
+            $global:TerminateSession = $true
+        }
+
 
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
         # PostActionsPsModuleManagement - Important after initial implementation
