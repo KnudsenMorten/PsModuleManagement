@@ -41,5 +41,5 @@
             uninstall-module Microsoft.Graph.Beta -AllVersions -Force
             install-module Microsoft.Graph.Beta -RequiredVersion $global:ModuleRequiredVersion -Force
 
-            $global:TerminateSession = $false
+            $global:TerminateSession = $true
         }
