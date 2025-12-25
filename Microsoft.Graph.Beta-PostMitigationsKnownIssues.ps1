@@ -34,8 +34,17 @@
             $versionFolders = $graphPaths | ForEach-Object { Split-Path $_ -Parent } | Sort-Object -Unique
 
             $versionFolders | ForEach-Object {
-                Write-Host "Removing: $($_)"
-                Remove-Item $_ -Recurse -Force -ErrorAction SilentlyContinue
+
+                $folder = $_
+                $folderVersion = Split-Path $folder -Leaf
+
+                if ($folderVersion -eq $global:ModuleRequiredVersion) {
+                    Write-Host "Skipping required version folder: $folder"
+                    return
+                }
+
+                Write-Host "Removing: $folder"
+                Remove-Item $folder -Recurse -Force -ErrorAction SilentlyContinue
             }
 
             uninstall-module Microsoft.Graph.Beta -AllVersions -Force
