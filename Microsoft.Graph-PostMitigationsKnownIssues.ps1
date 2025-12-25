@@ -35,7 +35,7 @@
 
             $versionFolders | ForEach-Object {
                 Write-Host "Removing: $($_)"
-                Remove-Item $_ -Recurse -Force -ErrorAction Stop
+                Remove-Item $_ -Recurse -Force -ErrorAction SilentlyContinue
             }
 
             uninstall-module Microsoft.Graph -AllVersions -Force

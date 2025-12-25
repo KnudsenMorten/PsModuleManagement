@@ -35,11 +35,11 @@
 
             $versionFolders | ForEach-Object {
                 Write-Host "Removing: $($_)"
-                Remove-Item $_ -Recurse -Force -ErrorAction Stop
+                Remove-Item $_ -Recurse -Force -ErrorAction SilentlyContinue
             }
 
             uninstall-module Microsoft.Graph.Beta -AllVersions -Force
             install-module Microsoft.Graph.Beta -RequiredVersion $global:ModuleRequiredVersion -Force
 
-            $global:TerminateSession = $true
+            $global:TerminateSession = $false
         }

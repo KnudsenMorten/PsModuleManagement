@@ -162,8 +162,8 @@ $Modules = @(
                 [PSCustomObject]@{
                                     MainModule                        = "Microsoft.Graph.Intune"
                                     AuthModule                        = $null
-                                    PostMitigationScriptKnownIssues   = "Microsoft.Graph-PostMitigationsKnownIssues.ps1"
-                                    ModuleRequiredVersion             = $null
+                                    PostMitigationScriptKnownIssues   = ""
+                                    ModuleRequiredVersion             = "2.32"
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "Microsoft.Graph.Beta"
