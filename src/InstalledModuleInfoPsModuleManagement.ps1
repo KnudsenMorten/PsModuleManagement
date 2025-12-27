@@ -20,7 +20,10 @@ Function InstalledModuleInfoPsModuleManagement
                 [string]$ModuleRequiredVersion,
     [AllowEmptyString()]
            [AllowNull()]
-                [string]$AuthModuleRequiredVersion
+                [string]$AuthModuleRequiredVersion,
+    [AllowEmptyString()]
+           [AllowNull()]
+                [array]$RequiredModules
          )
 
 <#
@@ -134,6 +137,30 @@ Function InstalledModuleInfoPsModuleManagement
 
         } # If ($CheckInstallation)
 
+    # RequiredModules
+    If ($RequiredModules) {
+        $ForceMainModuleRepair = $false
+
+        ForEach ($Module in $RequiredModules) {
+            write-host ""
+            write-host "Validating critical module exist: $($Module)" 
+            $ModuleChkAuthModuleInfo = Get-installedmodule $Module -ErrorAction SilentlyContinue
+            If (!($ModuleChkAuthModuleInfo)) {
+                write-host "$($Module) -> NOT FOUND - REPAIR REQUIRED!"
+                $ForceMainModuleRepair = $true
+            } Else {
+                write-host "$($Module) -> $($ModuleChkAuthModuleInfo.version)"
+            }
+        }
+
+        If ($ForceMainModuleRepair) {
+            write-host ""
+            write-host "Re-install $($MainModule) (version: $($ModuleRequiredVersion)) as required files were not detected !"
+            install-module $MainModule -force -Scope AllUsers -RequiredVersion $ModuleRequiredVersion -AllowClobber
+        }
+    }
+
+
     # Get info about current version of Main Module
         write-host ""
         write-host "Getting info about current version of $($MainModule) ... Please Wait !"
@@ -241,8 +268,8 @@ Function InstalledModuleInfoPsModuleManagement
 # SIG # Begin signature block
 # MIIXAgYJKoZIhvcNAQcCoIIW8zCCFu8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUfajrpxs6MALQwonbE42Et/L0
-# Di+gghNiMIIFojCCBIqgAwIBAgIQeAMYQkVwikHPbwG47rSpVDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUBUaTyJpFT0OBUnyKcDkIyNjB
+# ENOgghNiMIIFojCCBIqgAwIBAgIQeAMYQkVwikHPbwG47rSpVDANBgkqhkiG9w0B
 # AQwFADBMMSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3QgQ0EgLSBSMzETMBEGA1UE
 # ChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbjAeFw0yMDA3MjgwMDAw
 # MDBaFw0yOTAzMTgwMDAwMDBaMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9i
@@ -350,16 +377,16 @@ Function InstalledModuleInfoPsModuleManagement
 # U2lnbiBHQ0MgUjQ1IENvZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJ
 # BgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0B
 # CQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAj
-# BgkqhkiG9w0BCQQxFgQUioCz+p1JKorQyEKf51zAwp+cOJswDQYJKoZIhvcNAQEB
-# BQAEggIAvH9AjGb4doaFkIjP7WKceGiUJ1rdIvM1JLtliAW/9C2/0+rb7FTNg1tm
-# bATLHlHhzLczfiUHCRGuCi+jBp1f7cd7t0VzDHDb67wQ5fbJKaPDhU29ihwGmeZ5
-# Ruq10h9DcuQIg8cZEwDZs45h3ToU8SlOJtPGFLGgShzarrSCnTtrHRhZDOioR56h
-# azT12IIq8oZNkL0fP1xd/+G4BC/D7TCNW/OfDLvSg3R6yZGk/+yUPNo9i8XcQaFw
-# +lAkvpkXjziVMu8XgjuWwWtMa2SpxHzDtLfLyVUsIJ7u97Z8o7452z6oSpzGilSX
-# D5qIogpLF/oA5NHS0y5+411LrqSnwA5MrASKNFMzpdjDOKZLi6EPKqRUw8kGwgG9
-# RQLGBx7lZQrKhHuHE2ms/4Oi9SXuO9XgxSlbyc5CGFkskEdJZQPRTuWws1oMZoSU
-# nhgay6iNpPUkJD7UfZld3UR1pfVWTg87dwelPuGGf79UrK/MpYzILSxExX3DSC0I
-# 45yKfCwVMMa5dVNJCDj7kRgzrDuHKsR/o1nIO9puQFhh2CFS7aIx7YYivEHCvRFe
-# 3CFOw5BSobJO6sJwHwEucDvXY4KVRwnVgio3j5o1ciPuYFP6RMo+vCbxbg5gBUu0
-# BsrA/KjUg5Nwq6dNDLyKDcD6N5Rqdo49UZduWT6g52uOxwWObkY=
+# BgkqhkiG9w0BCQQxFgQUplVUZmJtLINeGbeqJ/RgEQ/7Ki8wDQYJKoZIhvcNAQEB
+# BQAEggIAeWIx+C4TtCgf5kIpSKLOveveqjznNfVlnoGdQJi/rXJ+3daJ/nJOTJ94
+# dbhjBAbkds9PoQhMMyC33d+0CpkXZK5frzUhGKyE7tvBaDQQN7yRqjhmsw7YTEDe
+# YDrlWd2Br/kYgL7mXYGGdSXnzjXxA6PMn4MSK7XEYwKEOJPbhS/xHYeZFauP8coR
+# n69e2EiaQUh3EuVqe9ULb722d64IFGd3RjJCQAN3pmTmvqrbHjhR0kBMgsD0hyLm
+# Lre2UU6WUoqLeEC36q1vErXMeYlKcwfs64RhpXy4aSVGf8wi92WjLh52KoOE3SOT
+# QeC+K5HgFyoocehw9/l6496Usf1j5v2ZPaPbpyJTc+cALND3E8MobBkUIwcPc9Dr
+# /+0c6SVvJXR0Au9jAZbJqCbFsd0SaDFcda1wkL94IbH8faB27AvPSiIzI3II0S6D
+# Ad8ENSLktXHviN3K/NyNBe/Ds7KPUwcnD4qcoaDWX7LzyPb2MH56/+J+6AYFprEt
+# B5BMK1Yp2QBKNKkrMw/bNT23iFAFjSjggP2maKtxOI8asm319eVkS2EkOYcdjhtO
+# x0BR7OvfX0QQnBcUOH7XGCyFbLrh1XKONsPEESgHPz243WzEU1bDQAaLiv76BQ4q
+# dCoISnRk+8K13ZgyVEzjQAf6oocTsFM5CXVJ80rfS+7LFGl4TfE=
 # SIG # End signature block

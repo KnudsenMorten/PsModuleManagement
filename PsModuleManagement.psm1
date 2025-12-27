@@ -20,7 +20,10 @@ Function InstalledModuleInfoPsModuleManagement
                 [string]$ModuleRequiredVersion,
     [AllowEmptyString()]
            [AllowNull()]
-                [string]$AuthModuleRequiredVersion
+                [string]$AuthModuleRequiredVersion,
+    [AllowEmptyString()]
+           [AllowNull()]
+                [array]$RequiredModules
          )
 
 <#
@@ -133,6 +136,30 @@ Function InstalledModuleInfoPsModuleManagement
                 }
 
         } # If ($CheckInstallation)
+
+    # RequiredModules
+    If ($RequiredModules) {
+        $ForceMainModuleRepair = $false
+
+        ForEach ($Module in $RequiredModules) {
+            write-host ""
+            write-host "Validating critical module exist: $($Module)" 
+            $ModuleChkAuthModuleInfo = Get-installedmodule $Module -ErrorAction SilentlyContinue
+            If (!($ModuleChkAuthModuleInfo)) {
+                write-host "$($Module) -> NOT FOUND - REPAIR REQUIRED!"
+                $ForceMainModuleRepair = $true
+            } Else {
+                write-host "$($Module) -> $($ModuleChkAuthModuleInfo.version)"
+            }
+        }
+
+        If ($ForceMainModuleRepair) {
+            write-host ""
+            write-host "Re-install $($MainModule) (version: $($ModuleRequiredVersion)) as required files were not detected !"
+            install-module $MainModule -force -Scope AllUsers -RequiredVersion $ModuleRequiredVersion -AllowClobber
+        }
+    }
+
 
     # Get info about current version of Main Module
         write-host ""
@@ -542,8 +569,8 @@ Function TestConnectivityPsModuleManagement
 # SIG # Begin signature block
 # MIIaigYJKoZIhvcNAQcCoIIaezCCGncCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDFU8hD/+Kl4Oiy
-# 3Kn2t2vNzpPJJilM3HjB56H9aKYnIqCCFsUwggNfMIICR6ADAgECAgsEAAAAAAEh
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCC/zjdMTbPoly3q
+# 4cbP2QVQ3SxeoQrvOv63HPW+niSodKCCFsUwggNfMIICR6ADAgECAgsEAAAAAAEh
 # WFMIojANBgkqhkiG9w0BAQsFADBMMSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3Qg
 # Q0EgLSBSMzETMBEGA1UEChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2ln
 # bjAeFw0wOTAzMTgxMDAwMDBaFw0yOTAzMTgxMDAwMDBaMEwxIDAeBgNVBAsTF0ds
@@ -669,17 +696,17 @@ Function TestConnectivityPsModuleManagement
 # IG52LXNhMS8wLQYDVQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcg
 # Q0EgMjAyMAIMeWPZY2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQB
 # gjcCAQwxCjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYK
-# KwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIEhlbzaF
-# 1O4pItxtYiPdYArAqRQxzRdRE46CGMviWBMyMA0GCSqGSIb3DQEBAQUABIICABFV
-# qyN8KpQdAUpJqsA6YC998BbSDQ2RczvMHU/XSqjcw7BUhDAOT9Y69N+vxKRwtuqi
-# e1lDMN5Xye6MnbuLrjf/RYF8teXYSHo82MPiWIlBZIR6k4rsjsIPgbrgdYn0Q751
-# 0miAegpJe0JrXSDgZ0SYdrde7VisgKS0Oamd2+I3Gfq7R/wpYt/lA5IPOlBah4gz
-# 8Rem2fxJB7oYYGyHk5eiOzPI42qYMG1KYn8k7jiP6OzHlCVF4K3CCZRmVnw+vB+5
-# tCFQFCSBvK/4ekJV/4BXPThQsZ10FE7dFRZvWBIGeJURWYz+5WRTauibnHRK5Y+G
-# +GPGF0VsutwRGUEE0koK/+se2H+s5s2yDFqJz+Ksz8Bt9BsZzL1CHi12uQew28Sf
-# qtT0zF8CzPq0XeWyRjlNYukoHj0zpk57wc2BAr85Nw3YdnYKP0yugu7c+6HmcqAs
-# accGOxL0SBnCDXwCuP8bV6Rrjf6Aokp52U7xOCIHTuPMc2yEX64jgPFXh0rbT2I1
-# r6DrM1sPzgQ4kKIUVt5viQ27kYtO+an0RxbRvUQdr90b5jCmy9NI9UeRT2EMZ/8V
-# weX9ONKAmFNrjx42d1GS746d1gPA5CL23TZD1V3ch5WIaNJjKZZCTUb5w5zUobew
-# wvJ7/AT0eWKbExTxavh4GTU1tcoXdWCNw/USdKqg
+# KwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIFk6VqfI
+# pdKJrgSuNDjLUFWqChmBNDK68qCdcko8QiL7MA0GCSqGSIb3DQEBAQUABIICAMMx
+# Sjr9Etjvk1z6X4t4s4f+/X+OnkIW7WTQPWtoDbA4meGFgs27aXtVlTWWnB3KvPlu
+# QxHWKm8fJXfYKn8lIU0Ki1A+RLVTEooPtmHEdGfISiII/YP8j5hs9OMumIZYr4m5
+# OwpWBITu37v8/89+DhFycGxIqYWqu+fGTxV8BwiPsLyrYI+6RS1xUkHGBjPmkLVy
+# M/PeffwI2v4mEHBZt5sJDmtxFyitM141PNBFznzun6CfGYmJA5ge5w0GwnpIw+cZ
+# Owtr/tHmsVNDmaJn4uVcysu0//xBp7iFcZpdhnnYA3n8AWJeLtc1uimIJV9zrYB8
+# nth8z8VJrEzkP/HjVy4lqwhd/TjC+EJ4lkiMhPBn257cWRaIzhCRfJyVU+7/bW46
+# AdmLsfa78VJB4+lpbjAwZgl6hKIHMB/9o6jD9F7dxmLtqBmljzAsje31zC27gv6q
+# tJZJL6aER/EXMzuwJVuMC3KOrFuw1PM1bUJPvKQcFKEEETjpjGnJFP8F94h5WfWD
+# Hv9B14lxqOTYZbYwf6vaaQrD3ZJ9D75V7iCfn7iscYJcsaBJQnkAf5HfAHeMymvd
+# XX4vuyPW+O+h2so0ymnKw/yVF9gWyBc5V2MgSkj/zq2g6a46VakKh2MuuKHA9ZFm
+# d97eCyPCKvAXmX6iukN7ylxHleV+GDgA2OYVr+Bu
 # SIG # End signature block
