@@ -78,7 +78,7 @@ Function InstalledModuleInfoPsModuleManagement
                                     Catch
                                         {
                                             write-host ""
-                                            write-host "Errors occured .... terminating as modules are locked in memory !!"
+                                            write-host "Errors occurred .... terminating as modules are locked in memory !!"
                                             write-host "Close down the current Powershell session and re-run this script !"
                                             Exit 1
                                         }
@@ -280,10 +280,28 @@ Function PostActionsPsModuleManagement
     write-host "Known Mitigations are in progress .... Please Wait !"
     write-host ""
 
-    $TargetFile = $env:windir + "\temp\" + $PostMitigationScriptKnownIssues
+    $TargetFile = $env:windir + "\temp\" + $FileName
     Remove-Item $TargetFile -ErrorAction SilentlyContinue
 
-    $ScriptFromGitHub = Invoke-WebRequest "$($GitHubUri)/$($PostMitigationScriptKnownIssues)" -OutFile $TargetFile
+    $SourceUri = "$($GitHubUri)/$($FileName)"
+    Try
+        {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            Invoke-WebRequest -Uri $SourceUri -OutFile $TargetFile -UseBasicParsing -ErrorAction Stop
+        }
+    Catch
+        {
+            write-host "ERROR: Could not download post-mitigation script '$FileName' from $SourceUri" -ForegroundColor Red
+            write-host $_.Exception.Message -ForegroundColor Red
+            Return $global:TerminateSession
+        }
+
+    If (-not (Test-Path $TargetFile))
+        {
+            write-host "ERROR: Downloaded file not found at $TargetFile - skipping mitigation" -ForegroundColor Red
+            Return $global:TerminateSession
+        }
+
     & $TargetFile
 
 Return $global:TerminateSession
@@ -364,7 +382,7 @@ Function SendMailNotificationsPsModuleManagement
                      [AllowNull()]
                 [string]$SMTP_Password,
             [Parameter(mandatory)]
-                [string]$SMTP_Port,
+                [int]$SMTP_Port,
             [Parameter(mandatory)]
                 [string]$SMTP_From,
             [Parameter(mandatory)]
@@ -386,7 +404,7 @@ Function SendMailNotificationsPsModuleManagement
             $SMTP_Body += "<br>"
             $SMTP_Body += "Mail sent from $($Description) using SMTP Host: $($SMTP_Host)<br>"
 
-            If ( ($SMTP_UserId -eq "") -or ($SMTP_UserId -eq $null) )
+            If ( ([string]::IsNullOrEmpty($SMTP_UserId)) )
                 {
                     $SMTP_Body += "SMTP Authentication: Anonymous"
 

@@ -11,7 +11,7 @@ Start-Transcript $Log
     $CriticalErrorsOccured = $false
     $MaximumFunctionCount = 32768
 
-Function Manage-Powershell-Module
+Function Update-PowershellModule
 {
     [CmdletBinding()]
     param(
@@ -108,7 +108,7 @@ Function Manage-Powershell-Module
 
     $ModuleName = "PsModuleManagement"
     $Scope      = "AllUsers"
-    Manage-Powershell-Module -ModuleName $ModuleName -Scope AllUsers
+    Update-PowershellModule -ModuleName $ModuleName -Scope AllUsers
     Import-module PsModuleManagement -Global -force -DisableNameChecking
 
  
@@ -169,7 +169,7 @@ $Modules = @(
                                     MainModule                        = "Microsoft.Graph"
                                     AuthModule                        = "Microsoft.Graph.Authentication"
                                     RequiredModules                   = @("Microsoft.Graph.Groups","Microsoft.Graph.Identity.SignIns")
-                                    PostMitigationScriptKnownIssues   = "Microsoft.Graph-PostMitigationsKnownIssues.ps1"
+                                    PostMitigationScriptKnownIssues   = "Microsoft_Graph-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = "2.32.0"
                                     AuthModuleRequiredVersion         = "2.32.0"
                                  }
@@ -177,7 +177,7 @@ $Modules = @(
                                     MainModule                        = "Microsoft.Graph.Intune"
                                     AuthModule                        = $null
                                     RequiredModules                   = @()
-                                    PostMitigationScriptKnownIssues   = "Microsoft.Graph.Intune-PostMitigationsKnownIssues.ps1"
+                                    PostMitigationScriptKnownIssues   = "Microsoft_Graph_Intune-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = $null
                                     AuthModuleRequiredVersion         = $null
                                  }
@@ -185,7 +185,7 @@ $Modules = @(
                                     MainModule                        = "Microsoft.Graph.Beta"
                                     AuthModule                        = "Microsoft.Graph.Authentication"
                                     RequiredModules                   = @("Microsoft.Graph.Beta.Groups","Microsoft.Graph.Beta.Identity.SignIns")
-                                    PostMitigationScriptKnownIssues   = "Microsoft.Graph.Beta-PostMitigationsKnownIssues.ps1"
+                                    PostMitigationScriptKnownIssues   = "Microsoft_Graph_Beta-PostMitigationsKnownIssues.ps1"
                                     ModuleRequiredVersion             = "2.32.0"
                                     AuthModuleRequiredVersion         = "2.32.0"
                                  }
@@ -314,10 +314,10 @@ ForEach ($Module in $Modules)
                                                         -UseSSL $global:SMTP_UseSSL
 
                 # Re-installing current Main module to try to fix current state!
-                    If ($InstalledAllVersionsMainModule)
+                    If ($Global:InstalledVersionMainModule)
                         {
                             Write-host ""
-                            Write-host "Errors detected .. Re-installing version $($InstalledAllVersionsMainModule.version) of $($MainModule) ... Please Wait !"
+                            Write-host "Errors detected .. Re-installing version $($Global:InstalledVersionMainModule.version) of $($MainModule) ... Please Wait !"
 
                             # Stopping all services
                                 PowershellServiceProcessMaintenance -Services $MaintenancePowershellServices -Processes $MaintenancePowershellProcesses -Action STOP
@@ -329,7 +329,7 @@ ForEach ($Module in $Modules)
                                     }
                                 Catch
                                     {
-                                        write-host "Errors occured .... terminating as modules are locked in memory !!"
+                                        write-host "Errors occurred .... terminating as modules are locked in memory !!"
                                         write-host "Close down the current Powershell session and re-run this script !"
                                         Exit 1
                                     }
@@ -341,7 +341,7 @@ ForEach ($Module in $Modules)
                                     }
                                 Catch
                                     {
-                                        write-host "Errors occured .... terminating as modules are locked in memory !!"
+                                        write-host "Errors occurred .... terminating as modules are locked in memory !!"
                                         write-host "Close down the current Powershell session and re-run this script !"
                                         Exit 1
                                     }
@@ -386,7 +386,7 @@ ForEach ($Module in $Modules)
                                                                             -Description $Description `
                                                                             -UseSSL $global:SMTP_UseSSL
                                 }
-                            ElseIf (!($ConnectivityErrorsDetectedCurrent))
+                            ElseIf (!($ConnectivityErrorsDetected))
                                 {
                                     $ConnectivityInstalledVersions = "REINSTALL_SUCCESS"
 
@@ -414,7 +414,7 @@ ForEach ($Module in $Modules)
         write-host "Getting version information from Powershell Gallery ... Please Wait !"
 
         # Online versions in Powershell Gallery
-            If ($global:ModuleRequiredVersion -eq $null)   # use latest version
+            If ($null -eq $global:ModuleRequiredVersion)   # use latest version
                 {
                     $OnlineVersions = Find-Module -Name $MainModule -Repository PSGallery
                 }
@@ -456,6 +456,7 @@ ForEach ($Module in $Modules)
                             {
                                 Write-host "Initial installation & post-actions requires the current session to be terminated and restarted !"
                                 write-host "Close down the current Powershell session and re-run this script !"
+                                Exit 1
                             }
                     
                     # Installed Versions
@@ -578,7 +579,7 @@ ForEach ($Module in $Modules)
         If ( (!($UpgradeNeeded)) -or ($UpgradeSuccess) )
             {
                 write-host ""
-                write-host "Checking if old modules of $($MainModule) incl. sub-modules shoule be removed .... please wait !"
+                write-host "Checking if old modules of $($MainModule) incl. sub-modules should be removed .... please wait !"
 
                 InstalledModuleInfoPsModuleManagement -MainModule $MainModule -AuthModule $AuthModule -MaintenancePowershellServices $MaintenancePowershellServices -MaintenancePowershellProcesses $MaintenancePowershellProcesses -GetOldVersions
 
