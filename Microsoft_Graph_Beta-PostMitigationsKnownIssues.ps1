@@ -10,7 +10,7 @@
     # Forcing a maximum/specific version
     Write-host "Version: $($Global:InstalledVersionMainModule.Version)"
     write-host ""
-<#
+
     # Forcing a maximum/specific version
     $global:ModuleRequiredVersion = "2.32.0"
 
@@ -49,4 +49,3 @@
 
             $global:TerminateSession = $true
         }
-#>

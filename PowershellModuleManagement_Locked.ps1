@@ -170,8 +170,8 @@ $Modules = @(
                                     AuthModule                        = "Microsoft.Graph.Authentication"
                                     RequiredModules                   = @("Microsoft.Graph.Groups","Microsoft.Graph.Identity.SignIns")
                                     PostMitigationScriptKnownIssues   = "Microsoft_Graph-PostMitigationsKnownIssues.ps1"
-                                    ModuleRequiredVersion             = $null
-                                    AuthModuleRequiredVersion         = $null
+                                    ModuleRequiredVersion             = "2.32.0"
+                                    AuthModuleRequiredVersion         = "2.32.0"
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "Microsoft.Graph.Intune"
@@ -186,8 +186,8 @@ $Modules = @(
                                     AuthModule                        = "Microsoft.Graph.Authentication"
                                     RequiredModules                   = @("Microsoft.Graph.Beta.Groups","Microsoft.Graph.Beta.Identity.SignIns")
                                     PostMitigationScriptKnownIssues   = "Microsoft_Graph_Beta-PostMitigationsKnownIssues.ps1"
-                                    ModuleRequiredVersion             = $null
-                                    AuthModuleRequiredVersion         = $null
+                                    ModuleRequiredVersion             = "2.32.0"
+                                    AuthModuleRequiredVersion         = "2.32.0"
                                  }
                 [PSCustomObject]@{
                                     MainModule                        = "AzLogDcrIngestPS"
