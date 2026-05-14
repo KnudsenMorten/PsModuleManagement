@@ -72,26 +72,7 @@
     $MainProgram = $PSScriptRoot + "\" + $FileName
     Remove-Item $MainProgram -ErrorAction SilentlyContinue
 
-    # Ensure TLS 1.2 before contacting GitHub / PowerShell Gallery
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-    $SourceUri = "$($GitHubUri)/$($FileName)"
-    Try
-        {
-            Invoke-WebRequest -Uri $SourceUri -OutFile $MainProgram -UseBasicParsing -ErrorAction Stop
-        }
-    Catch
-        {
-            Write-Host "ERROR: Could not download $FileName from $SourceUri" -ForegroundColor Red
-            Write-Host $_.Exception.Message -ForegroundColor Red
-            Exit 1
-        }
-
-    If (-not (Test-Path $MainProgram))
-        {
-            Write-Host "ERROR: $MainProgram was not written to disk - aborting" -ForegroundColor Red
-            Exit 1
-        }
+    $ScriptFromGitHub = Invoke-WebRequest "$($GitHubUri)/$($FileName)" -OutFile $MainProgram
 
 
 #########################################################################################################
