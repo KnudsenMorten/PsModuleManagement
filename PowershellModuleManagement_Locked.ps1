@@ -105,6 +105,140 @@ Function Update-PowershellModule
         }
 }     
 
+Function Resolve-PowershellModuleRequiredVersion
+{
+    [CmdletBinding()]
+    param(
+            [Parameter(Mandatory)]
+                [string]$ModuleName,
+            [Parameter()]
+                [string]$RequiredVersion
+         )
+
+    If ([string]::IsNullOrWhiteSpace($RequiredVersion))
+        {
+            return $null
+        }
+
+    # Resolve aliases such as 3.6 to the exact PSGallery version string, e.g. 3.6.0.
+    # System.Version treats 3.6 and 3.6.0 as different objects, so string/Version comparison can otherwise
+    # misclassify an installed 3.6.0 as a non-locked version when the lock is written as 3.6.
+    $OnlineExactVersion = Find-Module -Name $ModuleName -Repository PSGallery -RequiredVersion $RequiredVersion -ErrorAction SilentlyContinue
+
+    If ($OnlineExactVersion)
+        {
+            return [string]$OnlineExactVersion.Version
+        }
+
+    return $RequiredVersion
+}
+
+Function Test-PowershellModuleVersionMatchesLock
+{
+    [CmdletBinding()]
+    param(
+            [Parameter(Mandatory)]
+                [object]$InstalledVersion,
+            [Parameter(Mandatory)]
+                [string]$RequiredVersion
+         )
+
+    $InstalledVersionString = [string]$InstalledVersion
+    $RequiredVersionString = [string]$RequiredVersion
+
+    If ($InstalledVersionString -eq $RequiredVersionString)
+        {
+            return $true
+        }
+
+    # Accept shortened lock syntax only when the installed version has the same prefix and only trailing .0 components.
+    # Example: lock 3.6 matches installed 3.6.0, but lock 3.6 does not match 3.6.1 or 3.60.0.
+    If ($InstalledVersionString -match '^' + [regex]::Escape($RequiredVersionString) + '(\.0)+$')
+        {
+            return $true
+        }
+
+    return $false
+}
+
+Function Install-PowershellModuleExactOrLatest
+{
+    [CmdletBinding()]
+    param(
+            [Parameter(Mandatory)]
+                [string]$ModuleName,
+            [Parameter()]
+                [string]$RequiredVersion,
+            [Parameter()]
+                [ValidateSet("AllUsers","CurrentUser")]
+                [string]$Scope = "AllUsers"
+         )
+
+    If ([string]::IsNullOrWhiteSpace($RequiredVersion))
+        {
+            Write-host "Installing latest version of $($ModuleName) from PSGallery in scope $($Scope) .... Please Wait !"
+            Install-Module -Name $ModuleName -Repository PSGallery -Force -Scope $Scope -AllowClobber -ErrorAction Stop
+        }
+    Else
+        {
+            $ResolvedRequiredVersion = Resolve-PowershellModuleRequiredVersion -ModuleName $ModuleName -RequiredVersion $RequiredVersion
+            $InstalledExactVersion = Get-Module -Name $ModuleName -ListAvailable -ErrorAction SilentlyContinue | Where-Object { Test-PowershellModuleVersionMatchesLock -InstalledVersion $_.Version -RequiredVersion $ResolvedRequiredVersion } | Select-Object -First 1
+
+            If ($InstalledExactVersion)
+                {
+                    Write-host "OK - Locked version $($ResolvedRequiredVersion) of $($ModuleName) is already installed - not reinstalling"
+                    return
+                }
+
+            Write-host "Installing locked version $($ResolvedRequiredVersion) of $($ModuleName) from PSGallery in scope $($Scope) .... Please Wait !"
+            Install-Module -Name $ModuleName -Repository PSGallery -RequiredVersion $ResolvedRequiredVersion -Force -Scope $Scope -AllowClobber -ErrorAction Stop
+        }
+}
+
+
+Function Ensure-PowershellModuleRequiredVersion
+{
+    [CmdletBinding()]
+    param(
+            [Parameter(Mandatory)]
+                [string]$ModuleName,
+            [Parameter()]
+                [string]$RequiredVersion,
+            [Parameter()]
+                [ValidateSet("AllUsers","CurrentUser")]
+                [string]$Scope = "AllUsers"
+         )
+
+    If ([string]::IsNullOrWhiteSpace($RequiredVersion))
+        {
+            return
+        }
+
+    $ResolvedRequiredVersion = Resolve-PowershellModuleRequiredVersion -ModuleName $ModuleName -RequiredVersion $RequiredVersion
+    $InstalledVersions = Get-Module -Name $ModuleName -ListAvailable -ErrorAction SilentlyContinue
+    $InstalledExactVersion = $InstalledVersions | Where-Object { Test-PowershellModuleVersionMatchesLock -InstalledVersion $_.Version -RequiredVersion $ResolvedRequiredVersion } | Select-Object -First 1
+
+    If ($InstalledExactVersion)
+        {
+            Write-host "OK - Locked version $($ResolvedRequiredVersion) of $($ModuleName) is installed"
+        }
+    Else
+        {
+            Install-PowershellModuleExactOrLatest -ModuleName $ModuleName -RequiredVersion $ResolvedRequiredVersion -Scope $Scope
+            $InstalledVersions = Get-Module -Name $ModuleName -ListAvailable -ErrorAction SilentlyContinue
+        }
+
+    # A locked module must not keep newer/older side-by-side versions.
+    # PowerShell imports the newest installed version by default unless -RequiredVersion is used everywhere.
+    $OtherInstalledVersions = $InstalledVersions | Where-Object { -not (Test-PowershellModuleVersionMatchesLock -InstalledVersion $_.Version -RequiredVersion $ResolvedRequiredVersion) }
+
+    ForEach ($OtherVersion in $OtherInstalledVersions)
+        {
+            Write-host "Removing non-locked version $($OtherVersion.Version) of $($ModuleName) ... Please Wait !"
+            Uninstall-Module -Name $ModuleName -RequiredVersion $OtherVersion.Version -Force -ErrorAction SilentlyContinue
+        }
+}
+
 
     $ModuleName = "PsModuleManagement"
     $Scope      = "AllUsers"
@@ -122,7 +256,7 @@ $Modules = @(
                                     AuthModule                        = $null
                                     RequiredModules                   = @()
                                     PostMitigationScriptKnownIssues   = "ExchangeOnlineManagement-PostMitigationsKnownIssues.ps1"
-                                    ModuleRequiredVersion             = "3.6"
+                                    ModuleRequiredVersion             = "3.6.0"
                                     AuthModuleRequiredVersion         = $null
                                  }
                 [PSCustomObject]@{
@@ -243,6 +377,22 @@ ForEach ($Module in $Modules)
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
             InstalledModuleInfoPsModuleManagement -MainModule $MainModule -AuthModule $AuthModule -MaintenancePowershellServices $MaintenancePowershellServices -MaintenancePowershellProcesses $MaintenancePowershellProcesses -CheckInstallation -ModuleRequiredVersion $ModuleRequiredVersion -AuthModuleRequiredVersion $AuthModuleRequiredVersion -RequiredModules $RequiredModules
 
+            # Enforce locked versions explicitly. This prevents Microsoft.Graph dependencies from being pulled/kept at latest when the module is pinned.
+                Ensure-PowershellModuleRequiredVersion -ModuleName $MainModule -RequiredVersion $ModuleRequiredVersion -Scope AllUsers
+
+                If ($AuthModule)
+                    {
+                        Ensure-PowershellModuleRequiredVersion -ModuleName $AuthModule -RequiredVersion $AuthModuleRequiredVersion -Scope AllUsers
+                    }
+
+                ForEach ($RequiredModule in $RequiredModules)
+                    {
+                        Ensure-PowershellModuleRequiredVersion -ModuleName $RequiredModule -RequiredVersion $ModuleRequiredVersion -Scope AllUsers
+                    }
+
+            # Refresh module state after enforcing locked versions; InstalledModuleInfoPsModuleManagement sets globals such as $CurrentInstalledVersion.
+                InstalledModuleInfoPsModuleManagement -MainModule $MainModule -AuthModule $AuthModule -MaintenancePowershellServices $MaintenancePowershellServices -MaintenancePowershellProcesses $MaintenancePowershellProcesses -CheckInstallation -ModuleRequiredVersion $ModuleRequiredVersion -AuthModuleRequiredVersion $AuthModuleRequiredVersion -RequiredModules $RequiredModules
+
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
         # PostActionsPsModuleManagement - Important after initial implementation
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -325,7 +475,7 @@ ForEach ($Module in $Modules)
                             # Re-installing current Main module to try to fix current state!
                                 Try
                                     {
-                                        install-module $MainModule -force -Scope AllUsers -AllowClobber -ErrorAction Stop
+                                        Install-PowershellModuleExactOrLatest -ModuleName $MainModule -RequiredVersion $global:ModuleRequiredVersion -Scope AllUsers
                                     }
                                 Catch
                                     {
@@ -337,13 +487,28 @@ ForEach ($Module in $Modules)
                             # Re-installing current Auth module to try to fix current state!
                                 Try
                                     {
-                                        install-module $AuthModule -force -Scope AllUsers -AllowClobber -ErrorAction Stop
+                                        Install-PowershellModuleExactOrLatest -ModuleName $AuthModule -RequiredVersion $global:AuthModuleRequiredVersion -Scope AllUsers
                                     }
                                 Catch
                                     {
                                         write-host "Errors occurred .... terminating as modules are locked in memory !!"
                                         write-host "Close down the current Powershell session and re-run this script !"
                                         Exit 1
+                                    }
+
+                            # Re-installing required sub-modules to try to fix current state!
+                                ForEach ($RequiredModule in $RequiredModules)
+                                    {
+                                        Try
+                                            {
+                                                Install-PowershellModuleExactOrLatest -ModuleName $RequiredModule -RequiredVersion $global:ModuleRequiredVersion -Scope AllUsers
+                                            }
+                                        Catch
+                                            {
+                                                write-host "Errors occurred while re-installing required module $($RequiredModule) .... terminating as modules are locked in memory !!"
+                                                write-host "Close down the current Powershell session and re-run this script !"
+                                                Exit 1
+                                            }
                                     }
 
                             # PostActionsPsModuleManagement
@@ -424,16 +589,27 @@ ForEach ($Module in $Modules)
                 }
 
         # Newest Online version in Powershell Gallery
-            $NewestOnlineVersion = $OnlineVersions.Version
+            $NewestOnlineVersion = [string]$OnlineVersions.Version
 
             write-host ""
             Write-host "Online: Newest version in Powershell Gallery of module $($MainModule): $($NewestOnlineVersion)"
 
         # Compare versions
-            if ( ([version]$NewestOnlineVersion) -gt ([version]$CurrentInstalledVersion) )
+            $DesiredVersionIsLocked = -not [string]::IsNullOrWhiteSpace($global:ModuleRequiredVersion)
+            $InstalledVersionDiffersFromLock = $DesiredVersionIsLocked -and (-not (Test-PowershellModuleVersionMatchesLock -InstalledVersion $CurrentInstalledVersion -RequiredVersion $NewestOnlineVersion))
+            $NewerVersionAvailable = (-not $DesiredVersionIsLocked) -and (([version]$NewestOnlineVersion) -gt ([version]$CurrentInstalledVersion))
+
+            if ( $InstalledVersionDiffersFromLock -or $NewerVersionAvailable )
                 {
                     Write-host ""
-                    Write-host "Newer version ($($NewestOnlineVersion)) of $($MainModule) was detected in Powershell Gallery" -ForegroundColor Yellow
+                    If ($DesiredVersionIsLocked)
+                        {
+                            Write-host "Locked version ($($NewestOnlineVersion)) of $($MainModule) is required; installed version is $($CurrentInstalledVersion)" -ForegroundColor Yellow
+                        }
+                    Else
+                        {
+                            Write-host "Newer version ($($NewestOnlineVersion)) of $($MainModule) was detected in Powershell Gallery" -ForegroundColor Yellow
+                        }
 
                     # Default variables
                         $UpgradeNeeded = $true
@@ -443,11 +619,18 @@ ForEach ($Module in $Modules)
                     # Stopping all services
                         PowershellServiceProcessMaintenance -Services $MaintenancePowershellServices -Processes $MaintenancePowershellProcesses -Action STOP
                             
-                    # Update modules
+                    # Update / enforce module version
                         Write-host ""
-                        Write-host "Updating to latest version $($NewestOnlineVersion) of $($MainModule) from Powershell Gallery ... Please Wait !" -ForegroundColor Yellow
-
-                        Update-module $MainModule -RequiredVersion $NewestOnlineVersion -Force
+                        If ($DesiredVersionIsLocked)
+                            {
+                                Write-host "Enforcing locked version $($NewestOnlineVersion) of $($MainModule) from Powershell Gallery ... Please Wait !" -ForegroundColor Yellow
+                                Install-PowershellModuleExactOrLatest -ModuleName $MainModule -RequiredVersion $NewestOnlineVersion -Scope AllUsers
+                            }
+                        Else
+                            {
+                                Write-host "Updating to latest version $($NewestOnlineVersion) of $($MainModule) from Powershell Gallery ... Please Wait !" -ForegroundColor Yellow
+                                Update-module $MainModule -RequiredVersion $NewestOnlineVersion -Force
+                            }
 
                     # PostActionsPsModuleManagement
                         $Result = PostActionsPsModuleManagement -FileName $PostMitigationScriptKnownIssues -GitHubUri "https://raw.githubusercontent.com/KnudsenMorten/PsModuleManagement/main"
@@ -568,7 +751,14 @@ ForEach ($Module in $Modules)
 
                     # No new version detected ... continuing !
                     Write-host ""
-                    Write-host "OK - Running latest version ($($NewestOnlineVersion)) of $($MainModule)" -ForegroundColor Green
+                    If ($DesiredVersionIsLocked)
+                        {
+                            Write-host "OK - Running locked version ($($NewestOnlineVersion)) of $($MainModule)" -ForegroundColor Green
+                        }
+                    Else
+                        {
+                            Write-host "OK - Running latest version ($($NewestOnlineVersion)) of $($MainModule)" -ForegroundColor Green
+                        }
                 }
 
 
@@ -620,6 +810,7 @@ ForEach ($Module in $Modules)
                                                     -Description $Description `
                                                     -UseSSL $global:SMTP_UseSSL
             write-host "Exit SUCCESS (Exit 0)"
+            Stop-Transcript
             Exit 0
         }
     Else
@@ -636,10 +827,9 @@ ForEach ($Module in $Modules)
                                                     -Description $Description `
                                                     -UseSSL $global:SMTP_UseSSL
             write-host "Exit FAILURE (Exit 1)"
+            Stop-Transcript
             Exit 1
         }
 
 
-#---------------------------------------------------------------------------------------------------------------------------------------
-Stop-Transcript
 #---------------------------------------------------------------------------------------------------------------------------------------
